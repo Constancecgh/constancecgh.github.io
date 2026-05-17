@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Constance — Fiches Bachibac</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --cream:    #FAF7F2;
+      --dark:     #1C1410;
+      --bordeaux: #5C2E1A;
+      --terra:    #C4622D;
+      --gold:     #D4A853;
+      --muted:    #8A7A70;
+      --card-bg:  #FFFFFF;
+      --border:   #E8DDD5;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--cream);
+      color: var(--dark);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Grain overlay ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      padding: 1.2rem 2.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      background: rgba(250,247,242,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 400;
+      color: var(--bordeaux);
+      letter-spacing: 0.05em;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--terra); }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 8rem 2rem 4rem;
+      position: relative;
+    }
+
+    .hero-tag {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--terra);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.2s forwards;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3.5rem, 10vw, 7rem);
+      font-weight: 300;
+      line-height: 1.05;
+      color: var(--dark);
+      margin-bottom: 0.3rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.4s forwards;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--bordeaux);
+    }
+
+    .hero-line {
+      width: 60px;
+      height: 1px;
+      background: var(--gold);
+      margin: 1.8rem auto;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.6s forwards;
+    }
+
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 0.8s forwards;
+    }
+
+    .hero-socials {
+      display: flex;
+      gap: 1.2rem;
+      margin-top: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 1s forwards;
+    }
+
+    .social-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      border: 1px solid var(--border);
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      color: var(--dark);
+      transition: all 0.25s;
+      background: white;
+    }
+
+    .social-btn:hover {
+      border-color: var(--terra);
+      color: var(--terra);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(196,98,45,0.12);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease 1.4s forwards;
+    }
+
+    .scroll-hint span {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .scroll-arrow {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 1.5s ease-in-out infinite;
+    }
+
+    /* ── About ── */
+    .about {
+      padding: 6rem 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .about-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--terra);
+      margin-bottom: 1.2rem;
+    }
+
+    .about-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+    }
+
+    .about-text {
+      font-size: 0.92rem;
+      line-height: 1.85;
+      color: var(--muted);
+    }
+
+    .about-text p + p { margin-top: 1rem; }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .stat-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(92,46,26,0.08);
+    }
+
+    .stat-n {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.8rem;
+      font-weight: 300;
+      color: var(--bordeaux);
+      line-height: 1;
+    }
+
+    .stat-l {
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 0.4rem;
+    }
+
+    /* ── Fiches section ── */
+    .fiches {
+      padding: 4rem 2rem 8rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+
+    .section-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--terra);
+      margin-bottom: 0.8rem;
+    }
+
+    .section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: var(--dark);
+    }
+
+    .fiches-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .fiche-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .fiche-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent, var(--terra));
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      transform-origin: left;
+    }
+
+    .fiche-card:hover::before { transform: scaleX(1); }
+
+    .fiche-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(92,46,26,0.1);
+      border-color: transparent;
+    }
+
+    .fiche-emoji {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .fiche-matiere {
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .fiche-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 400;
+      color: var(--dark);
+      line-height: 1.2;
+    }
+
+    .fiche-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.6;
+      flex: 1;
+    }
+
+    .fiche-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .tag {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 50px;
+      background: var(--cream);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      padding: 0.55rem 1.1rem;
+      background: var(--dark);
+      color: white;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      transition: background 0.2s;
+      align-self: flex-start;
+    }
+
+    .download-btn:hover { background: var(--bordeaux); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem;
+      color: var(--bordeaux);
+      margin-bottom: 0.6rem;
+    }
+
+    .footer-text {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scrollPulse {
+      0%, 100% { opacity: 0.3; }
+      50%       { opacity: 1; }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 640px) {
+      .about { grid-template-columns: 1fr; gap: 3rem; }
+      .nav-links { display: none; }
+      .hero-socials { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Constance</div>
+  <ul class="nav-links">
+    <li><a href="#about">À propos</a></li>
+    <li><a href="#fiches">Fiches</a></li>
+    <li><a href="https://www.instagram.com/constance.cgh" target="_blank">Instagram</a></li>
+    <li><a href="https://www.tiktok.com/@constance.cgh" target="_blank">TikTok</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-tag">✦ Bachibac · Fiches gratuites</p>
+  <h1 class="hero-title">Bonjour, je suis<br/><em>Constance</em></h1>
+  <div class="hero-line"></div>
+  <p class="hero-desc">
+    Ancienne Terminale Bachibac spécialités scientifiques,
+    bientôt étudiante à Paris. En attendant, je lance des projets —
+    et les fiches Bachibac, c'est juste le début.
+  </p>
+  <div class="hero-socials">
+    <a class="social-btn" href="https://www.instagram.com/constance.cgh" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+      @constance.cgh
+    </a>
+    <a class="social-btn" href="https://www.tiktok.com/@constance.cgh" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z"/></svg>
+      @constance.cgh
+    </a>
+  </div>
+  <div class="scroll-hint">
+    <div style="display:flex; gap:0.8rem; margin-top:0.5rem;">
+      <a href="https://www.instagram.com/constance.cgh" target="_blank" style="font-size:0.7rem; letter-spacing:0.1em; color:var(--terra); text-decoration:none;">Instagram</a>
+      <span style="color:var(--muted); font-size:0.7rem;">·</span>
+      <a href="https://www.tiktok.com/@constance.cgh" target="_blank" style="font-size:0.7rem; letter-spacing:0.1em; color:var(--terra); text-decoration:none;">TikTok</a>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div>
+    <p class="about-label">À propos</p>
+    <h2 class="about-title">Qui suis-je ?</h2>
+    <div class="about-text">
+      <p>
+        L'année dernière, j'étais en Terminale Bachibac avec des spécialités scientifiques.
+        Ces fiches, je les ai créées pour moi — et elles m'ont bien servi aux examens.
+      </p>
+      <p>
+        Cette année je prépare ma rentrée à Paris, et j'en profite pour lancer
+        plein de projets. Les fiches Bachibac, c'est le premier —
+        mais il y en a beaucoup d'autres qui arrivent.
+      </p>
+      <p>
+        Abonne-toi pour suivre la suite. 🧡
+      </p>
+    </div>
+  </div>
+  <div class="about-stats">
+    <div class="stat-card">
+      <div class="stat-n">6</div>
+      <div class="stat-l">Fiches PDF</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n">A+</div>
+      <div class="stat-l">Aux examens</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n">100%</div>
+      <div class="stat-l">Gratuit</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-n">∞</div>
+      <div class="stat-l">Projets à venir</div>
+    </div>
+  </div>
+</section>
+
+<!-- FICHES -->
+<section class="fiches" id="fiches">
+  <div class="section-header">
+    <p class="section-label">Téléchargements gratuits</p>
+    <h2 class="section-title">Mes fiches de révision</h2>
+  </div>
+
+  <div class="fiches-grid">
+
+    <div class="fiche-card" style="--accent: #8B1A1A;">
+      <div class="fiche-emoji">📖</div>
+      <p class="fiche-matiere">Bachibac · Espagnol</p>
+      <h3 class="fiche-title">Historia</h3>
+      <p class="fiche-desc">
+        2ª Guerra Mundial, Guerra Fría, Franquismo, descolonización, 
+        construcción europea. Fiches complètes avec frises chronologiques.
+      </p>
+      <div class="fiche-tags">
+        <span class="tag">18 pages</span>
+        <span class="tag">Fiches thématiques</span>
+        <span class="tag">Données clés</span>
+      </div>
+      <a class="download-btn" href="Historia.pdf" download>
+        ↓ Télécharger
+      </a>
+    </div>
+
+    <div class="fiche-card" style="--accent: #1A4D8F;">
+      <div class="fiche-emoji">🌍</div>
+      <p class="fiche-matiere">Bachibac · Espagnol</p>
+      <h3 class="fiche-title">Geografía</h3>
+      <p class="fiche-desc">
+        Mares y océanos, globalización, Francia, UE, territorios. 
+        Chokepoints, maritimización, potencias emergentes.
+      </p>
+      <div class="fiche-tags">
+        <span class="tag">22 pages</span>
+        <span class="tag">Vocabulaire essentiel</span>
+        <span class="tag">Données clés</span>
+      </div>
+      <a class="download-btn" href="Geografia.pdf" download>
+        ↓ Télécharger
+      </a>
+    </div>
+
+    <div class="fiche-card" style="--accent: #5C2E1A;">
+      <div class="fiche-emoji">📚</div>
+      <p class="fiche-matiere">Bachibac · Espagnol</p>
+      <h3 class="fiche-title">Literatura</h3>
+      <p class="fiche-desc">
+        Movimientos literarios, autores españoles et français, analyse de texte, 
+        mémoire historique, méthode commentaire. Siglo de Oro inclus.
+      </p>
+      <div class="fiche-tags">
+        <span class="tag">14 pages</span>
+        <span class="tag">Auteurs & œuvres</span>
+        <span class="tag">Méthode</span>
+      </div>
+      <a class="download-btn" href="Bachibac Literatura Fichas.pdf" download>
+        ↓ Télécharger
+      </a>
+    </div>
+
+    <div class="fiche-card" style="--accent: #2E2E4E;">
+      <div class="fiche-emoji">🗣️</div>
+      <p class="fiche-matiere">Bachibac · Oral</p>
+      <h3 class="fiche-title">Lenguaje para el Oral</h3>
+      <p class="fiche-desc">
+        Frases tipo, conectores, expresiones avanzadas. Les 5 étapes 
+        de l'oral parfait : introduire, décrire, interpréter, contextualiser, conclure.
+      </p>
+      <div class="fiche-tags">
+        <span class="tag">5 pages</span>
+        <span class="tag">50+ expressions</span>
+        <span class="tag">Connecteurs</span>
+      </div>
+      <a class="download-btn" href="Oral.pdf" download>
+        ↓ Télécharger
+      </a>
+    </div>
+
+    <div class="fiche-card" style="--accent: #8B5A00;">
+      <div class="fiche-emoji">✍️</div>
+      <p class="fiche-matiere">Bachibac · Écrit & Oral</p>
+      <h3 class="fiche-title">Vocabulario Hist-Geo</h3>
+      <p class="fiche-desc">
+        Toutes les expressions pour l'écrit et l'oral en Histoire-Géo : 
+        introduire, argumenter, transitions, conclure avec élégance.
+      </p>
+      <div class="fiche-tags">
+        <span class="tag">6 pages</span>
+        <span class="tag">80+ expressions</span>
+        <span class="tag">Bilingue FR·ES</span>
+      </div>
+      <a class="download-btn" href="Vocabulario.pdf" download>
+        ↓ Télécharger
+      </a>
+    </div>
+
+    <div class="fiche-card" style="--accent: #C4622D;">
+      <div class="fiche-emoji">🎨</div>
+      <p class="fiche-matiere">Bachibac · Oral</p>
+      <h3 class="fiche-title">Los Colores</h3>
+      <p class="fiche-desc">
+        Analyser les couleurs dans les documents iconographiques. 
+        Vocabulaire, interprétation symbolique, phrases pour l'oral.
+      </p>
+      <div class="fiche-tags">
+        <span class="tag">7 pages</span>
+        <span class="tag">Analyse d'images</span>
+        <span class="tag">Symbolisme</span>
+      </div>
+      <a class="download-btn" href="Colores Oral.pdf" download>
+        ↓ Télécharger
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<!-- COMING SOON -->
+<section style="padding: 4rem 2rem; text-align: center; background: var(--dark); color: white;">
+  <p style="font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:1rem;">La suite arrive bientôt</p>
+  <h2 style="font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:300; margin-bottom:1rem;">
+    Ce n'est que le début.
+  </h2>
+  <p style="font-size:0.92rem; color:rgba(255,255,255,0.55); max-width:420px; margin:0 auto 2rem; line-height:1.7;">
+    D'autres projets arrivent cette année. Abonne-toi sur Instagram et TikTok 
+    pour ne rien manquer de la suite.
+  </p>
+  <div style="display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+    <a href="https://www.instagram.com/constance.cgh" target="_blank"
+       style="padding:0.7rem 1.8rem; border:1px solid rgba(255,255,255,0.2); border-radius:50px; color:white; text-decoration:none; font-size:0.8rem; letter-spacing:0.08em; transition:all 0.2s;"
+       onmouseover="this.style.borderColor='#D4A853';this.style.color='#D4A853'"
+       onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='white'">
+      Instagram @constance.cgh
+    </a>
+    <a href="https://www.tiktok.com/@constance.cgh" target="_blank"
+       style="padding:0.7rem 1.8rem; border:1px solid rgba(255,255,255,0.2); border-radius:50px; color:white; text-decoration:none; font-size:0.8rem; letter-spacing:0.08em; transition:all 0.2s;"
+       onmouseover="this.style.borderColor='#D4A853';this.style.color='#D4A853'"
+       onmouseout="this.style.borderColor='rgba(255,255,255,0.2)';this.style.color='white'">
+      TikTok @constance.cgh
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Constance</div>
+  <p class="footer-text">
+    © Constance | @constance.cgh · Fiches gratuites Bachibac · Tous droits réservés
+  </p>
+</footer>
+
+</body>
+</html>
