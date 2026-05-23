@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartes Mentales · Historia Bachibac · @constance.cgh</title>
+<style>
+ @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+ :root {
+ --bg: #FAFAF8;
+ --dark: #1A1A2E;
+ --accent: #2D6A4F;
+ --accent-d: #1B4332;
+ --gold: #C9A84C;
+ --tag: #E8F5E9;
+ --light: #555;
+ --white: #fff;
+ --red: #B22222;
+ }
+
+ * { box-sizing: border-box; margin: 0; padding: 0; }
+
+ body {
+ font-family: 'Poppins', sans-serif;
+ background: var(--bg);
+ color: var(--dark);
+ min-height: 100vh;
+ }
+
+ /* ── HEADER ── */
+ header {
+ background: var(--accent-d);
+ padding: 0;
+ position: sticky;
+ top: 0;
+ z-index: 100;
+ border-bottom: 4px solid var(--gold);
+ }
+ .header-inner {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ padding: 14px 32px;
+ }
+ .header-title {
+ color: white;
+ font-size: 13px;
+ font-weight: 600;
+ letter-spacing: 1px;
+ }
+ .header-sub {
+ color: #FCE8DF;
+ font-size: 11px;
+ font-weight: 300;
+ margin-top: 2px;
+ }
+ .header-tag {
+ background: rgba(255,255,255,0.15);
+ color: white;
+ font-size: 10px;
+ font-weight: 600;
+ padding: 4px 12px;
+ border-radius: 20px;
+ letter-spacing: 1px;
+ }
+
+ /* ── NAV FICHAS ── */
+ .nav-fichas {
+ background: var(--accent-d);
+ padding: 0 32px 14px;
+ display: flex;
+ gap: 8px;
+ flex-wrap: wrap;
+ }
+ .nav-btn {
+ background: rgba(255,255,255,0.1);
+ color: #FCE8DF;
+ border: 1px solid rgba(255,255,255,0.2);
+ padding: 5px 14px;
+ border-radius: 20px;
+ font-size: 10px;
+ font-weight: 500;
+ cursor: pointer;
+ transition: all 0.2s;
+ font-family: 'Poppins', sans-serif;
+ }
+ .nav-btn:hover, .nav-btn.active {
+ background: var(--gold);
+ color: var(--accent-d);
+ border-color: var(--gold);
+ font-weight: 700;
+ }
+
+ /* ── MAIN ── */
+ main {
+padding: 14px 20px;
+ max-width: 1100px;
+ margin: 0 auto;
+ }
+
+ .ficha-section { display: none; }
+ .ficha-section.active { display: block; }
+
+ /* ── FICHA TITLE ── */
+ .ficha-header {
+ background: var(--accent);
+ border-radius: 10px;
+ padding: 18px 24px;
+ margin-bottom: 16px;
+ display: flex;
+ align-items: center;
+ gap: 16px;
+ }
+ .ficha-num {
+ background: var(--accent-d);
+ color: var(--gold);
+ font-size: 11px;
+ font-weight: 700;
+ padding: 4px 10px;
+ border-radius: 6px;
+ letter-spacing: 1px;
+ white-space: nowrap;
+ }
+ .ficha-header h2 {
+ color: white;
+ font-size: 16px;
+ font-weight: 700;
+ }
+ .ficha-header p {
+ color: #B7DFC9;
+ font-size: 11px;
+ font-weight: 300;
+ margin-top: 2px;
+ }
+
+ /* ── MIND MAP ── */
+ .mindmap {
+ display: flex;
+ flex-direction: column;
+ gap: 12px;
+ }
+
+ /* Central node */
+ .central-node {
+ background: var(--accent-d);
+ color: white;
+ border-radius: 12px;
+ padding: 14px 24px;
+ text-align: center;
+ font-size: 15px;
+ font-weight: 700;
+ margin: 0 auto;
+ max-width: 420px;
+ width: 100%;
+ border: 3px solid var(--gold);
+ position: relative;
+ }
+ .central-node::after {
+ content: '';
+ position: absolute;
+ bottom: -20px;
+ left: 50%;
+ transform: translateX(-50%);
+ width: 2px;
+ height: 20px;
+ background: var(--accent);
+ }
+ .central-node-sub {
+ font-size: 10px;
+ font-weight: 300;
+ color: #B7DFC9;
+ margin-top: 4px;
+ }
+
+ /* Branch container */
+ .branches {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+ gap: 10px;
+ margin-top: 0;
+ }
+
+ /* Branch */
+ .branch {
+ background: white;
+ border-radius: 10px;
+ overflow: hidden;
+ box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+ border-top: 4px solid var(--accent);
+ transition: transform 0.2s, box-shadow 0.2s;
+ }
+ .branch:hover {
+ transform: translateY(-3px);
+ box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+ }
+ .branch:nth-child(2) { border-top-color: #40916C; }
+ .branch:nth-child(3) { border-top-color: #52B788; }
+ .branch:nth-child(4) { border-top-color: var(--gold); }
+ .branch:nth-child(5) { border-top-color: #D4500A; }
+ .branch:nth-child(6) { border-top-color: #B22222; }
+
+ .branch-header {
+ background: var(--tag);
+ padding: 10px 14px;
+ font-size: 10px;
+ font-weight: 700;
+ color: var(--accent-d);
+ letter-spacing: 0.8px;
+ text-transform: uppercase;
+ display: flex;
+ align-items: center;
+ gap: 6px;
+ }
+ .branch-icon {
+ width: 20px;
+ height: 20px;
+ background: var(--accent);
+ border-radius: 50%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ color: white;
+ font-size: 9px;
+ font-weight: 700;
+ flex-shrink: 0;
+ }
+ .branch:nth-child(2) .branch-icon { background: #40916C; }
+ .branch:nth-child(3) .branch-icon { background: #52B788; }
+ .branch:nth-child(4) .branch-icon { background: var(--gold); }
+ .branch:nth-child(5) .branch-icon { background: #D4500A; }
+ .branch:nth-child(6) .branch-icon { background: #B22222; }
+
+ .branch-body { padding: 8px 12px; }
+
+ .leaf {
+ display: flex;
+ align-items: flex-start;
+ gap: 7px;
+ padding: 3px 0;
+ border-bottom: 1px solid #F0F7F4;
+ font-size: 11px;
+ color: var(--light);
+ line-height: 1.5;
+ }
+ .leaf:last-child { border-bottom: none; }
+ .leaf-dot {
+ width: 6px;
+ height: 6px;
+ background: var(--accent);
+ border-radius: 50%;
+ flex-shrink: 0;
+ margin-top: 5px;
+ }
+ .leaf:nth-child(even) .leaf-dot { background: #40916C; }
+ .leaf strong {
+ color: var(--dark);
+ font-weight: 600;
+ }
+
+ /* Date tag */
+ .date-tag {
+ display: inline-block;
+ background: var(--accent-d);
+ color: var(--gold);
+ font-size: 9px;
+ font-weight: 700;
+ padding: 1px 7px;
+ border-radius: 10px;
+ margin-right: 4px;
+ white-space: nowrap;
+ }
+
+ /* Timeline strip */
+ .timeline {
+ background: white;
+ border-radius: 10px;
+ box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+ overflow: hidden;
+ }
+ .timeline-header {
+ background: var(--accent);
+ color: white;
+ font-size: 10px;
+ font-weight: 700;
+ padding: 10px 16px;
+ letter-spacing: 1px;
+ text-transform: uppercase;
+ }
+ .timeline-body { padding: 12px 16px; }
+ .tl-item {
+ display: flex;
+ gap: 12px;
+ padding: 4px 0;
+ border-bottom: 1px solid #F0F7F4;
+ font-size: 11px;
+ align-items: flex-start;
+ }
+ .tl-item:last-child { border-bottom: none; }
+ .tl-date {
+ background: var(--accent-d);
+ color: var(--gold);
+ font-size: 9px;
+ font-weight: 700;
+ padding: 2px 8px;
+ border-radius: 8px;
+ white-space: nowrap;
+ flex-shrink: 0;
+ }
+ .tl-text { color: var(--light); line-height: 1.5; }
+ .tl-text strong { color: var(--dark); }
+
+ /* ── FOOTER ── */
+ footer {
+ background: var(--accent-d);
+ color: #FCE8DF;
+ font-size: 10px;
+ text-align: center;
+ padding: 12px;
+ margin-top: 24px;
+ border-top: 3px solid var(--gold);
+ }
+</style>
+</head>
+<body>
+
+<header>
+ <div class="header-inner">
+ <div>
+ <div class="header-title">✦ CUADERNO DE FICHAS · HISTORIA BACHIBAC</div>
+ <div class="header-sub">Cartes mentales · De la 2ª Guerra Mundial hasta nuestros días</div>
+ </div>
+ <div class="header-tag">TERMINALE BACHIBAC</div>
+ </div>
+ <nav class="nav-fichas">
+ <button class="nav-btn active" onclick="show(1)">1 · 2ª GM</button>
+ <button class="nav-btn" onclick="show(2)">2 · Violencia</button>
+ <button class="nav-btn" onclick="show(3)">3 · FR & ES en SGM</button>
+ <button class="nav-btn" onclick="show(4)">4 · Guerra Fría</button>
+ <button class="nav-btn" onclick="show(5)">5 · Franquismo</button>
+ <button class="nav-btn" onclick="show(6)">6 · V República</button>
+ <button class="nav-btn" onclick="show(7)">7 · Desafíos 1970</button>
+ <button class="nav-btn" onclick="show(8)">8 · Europa</button>
+ <button class="nav-btn" onclick="show(9)">9 · FR & ES hoy</button>
+ <button class="nav-btn" onclick="show(10)">10 · Vocabulario</button>
+ </nav>
+</header>
+
+<main>
+
+<!-- ══ FICHA 1 ══ -->
+<section class="ficha-section active" id="f1">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 01</div>
+ <div>
+ <h2>LA 2ª GUERRA MUNDIAL</h2>
+ <p>1939-1945 · El conflicto más destructivo de la historia</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🌍 2ª GUERRA MUNDIAL<br>
+ <span class="central-node-sub">1939 – 1945 · EJE vs ALIADOS</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>CAUSAS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Versalles (1919)</strong> — Alemania humillada, deudas enormes</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Crisis 1929</strong> — Gran Depresión, auge totalitarismo</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Fascismo/Nazismo</strong> — Mussolini & Hitler al poder</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Expansiones</strong> — Anschluss Austria, Sudetes</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>LOS BLOQUES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>EJE&nbsp;:</strong> Alemania · Italia · Japón</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>ALIADOS&nbsp;:</strong> Francia · UK · URSS · EE.UU.</div>
+ <div class="leaf"><div class="leaf-dot"></div>Pearl Harbor <span class="date-tag">07/12/1941 → EE.UU. entra</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>3 FASES CLAVE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1939-42 Victorias del Eje · Blitzkrieg</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1942-43 Stalingrado → punto de inflexión</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1944-45 Día D · Liberación · Capitulación</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CONSECUENCIAS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>60-70M muertos</strong> · 6M judíos (Shoa)</div>
+ <div class="leaf"><div class="leaf-dot"></div>ONU <span class="date-tag">1945 · Juicios de Núremberg</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Plan Marshall <span class="date-tag">1947</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Inicio <strong>Guerra Fría</strong> · División Alemania</div>
+ </div>
+ </div>
+ </div>
+ <div class="timeline">
+ <div class="timeline-header">⏱ FECHAS CLAVE</div>
+ <div class="timeline-body">
+ <div class="tl-item"><span class="tl-date">01/09/1939</span><div class="tl-text">Alemania invade Polonia → inicio de la guerra</div></div>
+ <div class="tl-item"><span class="tl-date">Juin 1940</span><div class="tl-text">Vichy · Llamamiento De Gaulle 18 junio</div></div>
+ <div class="tl-item"><span class="tl-date">Juin 1941</span><div class="tl-text">Operación Barbarroja → invasión URSS</div></div>
+ <div class="tl-item"><span class="tl-date">Fév. 1943</span><div class="tl-text"><strong>Stalingrado</strong> → gran derrota alemana, punto de inflexión</div></div>
+ <div class="tl-item"><span class="tl-date">06/06/1944</span><div class="tl-text"><strong>Día D</strong> — Desembarco en Normandía</div></div>
+ <div class="tl-item"><span class="tl-date">08/05/1945</span><div class="tl-text">Capitulación alemana · Fin en Europa</div></div>
+ <div class="tl-item"><span class="tl-date">Août 1945</span><div class="tl-text">Bombas atómicas Hiroshima & Nagasaki → FIN</div></div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 2 ══ -->
+<section class="ficha-section" id="f2">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 02</div>
+ <div>
+ <h2>VIOLENCIA DE MASA Y HOLOCAUSTO</h2>
+ <p>Totalitarismo · Genocidio · Crímenes contra la humanidad</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ ⚠️ VIOLENCIA DE MASA<br>
+ <span class="central-node-sub">Totalitarismo · Shoa · Guerra de Aniquilación</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>TOTALITARISMO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Control total Estado + partido único</div>
+ <div class="leaf"><div class="leaf-dot"></div>Líder carismático (Hitler · Mussolini · Stalin)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Censura · Propaganda · Represión sistemática</div>
+ <div class="leaf"><div class="leaf-dot"></div>Ultranaciónalismo · rechazo igualdad</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>GUERRA TOTAL</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Objetivo : destrucción total del enemigo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Civiles : bombardeos, hambre, enfermedades</div>
+ <div class="leaf"><div class="leaf-dot"></div>Blitz (Londres) · Dresde · Hiroshima</div>
+ <div class="leaf"><div class="leaf-dot"></div>Niños soldados (Juventudes Hitlerianas)</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>LA SHOA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>6 millones de judíos exterminados</div>
+ <div class="leaf"><div class="leaf-dot"></div>Leyes de Núremberg <span class="date-tag">1935 → segregación</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Wannsee <span class="date-tag">1942 → "Solución Final"</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Campos : Auschwitz · Treblinka · Sobibor</div>
+ <div class="leaf"><div class="leaf-dot"></div>Otras víctimas : gitanos · homosexuales</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>RECONOCIMIENTO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Juicios de Núremberg <span class="date-tag">1945-46</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>1eros juicios : crímenes contra la humanidad</div>
+ <div class="leaf"><div class="leaf-dot"></div>Deber de memoria → construcción europea</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 3 ══ -->
+<section class="ficha-section" id="f3">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 03</div>
+ <div>
+ <h2>FRANCIA Y ESPAÑA EN LA SGM</h2>
+ <p>Ocupación · Colaboración · Resistencia · Neutralidad</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇫🇷 🇪🇸 FR & ES EN LA SGM<br>
+ <span class="central-node-sub">Dos actitudes muy distintas</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>VICHY (FR)</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Armisticio <span class="date-tag">22/06/1940 → zona ocupada/libre</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Pétain : colaboración con Alemania</div>
+ <div class="leaf"><div class="leaf-dot"></div>Estatuto judíos · Vel d'Hiv <span class="date-tag">1942</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>STO : Servicio de Trabajo Obligatorio</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>RÉSISTANCE (FR)</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>De Gaulle <span class="date-tag">18/06/1940 → desde Londres</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Maquis : grupos armados interiores</div>
+ <div class="leaf"><div class="leaf-dot"></div>Sabotajes · prensa clandestina</div>
+ <div class="leaf"><div class="leaf-dot"></div>Liberación de París <span class="date-tag">25/08/1944</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>FRANCO (ES)</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1939 Neutralidad</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1940 No beligerancia (apoyo velado al Eje)</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1943 Retorno a la neutralidad</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>División Azul : 47.000 voluntarios en URSS</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>ESPAÑOLES EN LA GUERRA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>6.000 muertos en Mauthausen</div>
+ <div class="leaf"><div class="leaf-dot"></div>10.000 guerrilleros en Fuerzas del Interior</div>
+ <div class="leaf"><div class="leaf-dot"></div>"La Nueve" → 1eros en entrar en París</div>
+ <div class="leaf"><div class="leaf-dot"></div>500.000 exiliados cruzan los Pirineos <span class="date-tag">1939</span></div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 4 ══ -->
+<section class="ficha-section" id="f4">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 04</div>
+ <div>
+ <h2>LA GUERRA FRÍA</h2>
+ <p>1947-1991 · Dos bloques · Una rivalidad mundial</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🌐 GUERRA FRÍA<br>
+ <span class="central-node-sub">EE.UU. (capitalismo) vs URSS (comunismo) · sin guerra directa</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>BLOQUE OCCIDENTAL</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Liderado por <strong>EE.UU.</strong></div>
+ <div class="leaf"><div class="leaf-dot"></div>Capitalismo + democracia</div>
+ <div class="leaf"><div class="leaf-dot"></div>Plan Marshall <span class="date-tag">1947</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>OTAN <span class="date-tag">1949 · RFA</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>BLOQUE ORIENTAL</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Liderado por <strong>URSS</strong></div>
+ <div class="leaf"><div class="leaf-dot"></div>Comunismo · democracias populares</div>
+ <div class="leaf"><div class="leaf-dot"></div>COMECON <span class="date-tag">1949</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Pacto Varsovia <span class="date-tag">1955 · RDA</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>CRISIS CLAVE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Bloqueo Berlín <span class="date-tag">1948-49</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Guerra Corea <span class="date-tag">1950-53</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Muro de Berlín <span class="date-tag">1961</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Cuba</strong> <span class="date-tag">1962 → borde nuclear</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Vietnam <span class="date-tag">1964-73 → derrota EE.UU.</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>FIN & DESCOLONIZACIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Bandung <span class="date-tag">1955 → No Alineados</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Caída Muro Berlín <span class="date-tag">1989</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Disolución URSS <span class="date-tag">1991</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>EE.UU. → única superpotencia</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 5 ══ -->
+<section class="ficha-section" id="f5">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 05</div>
+ <div>
+ <h2>LA ESPAÑA FRANQUISTA Y LA TRANSICIÓN</h2>
+ <p>1939-1982 · De la dictadura a la democracia</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇪🇸 FRANQUISMO → DEMOCRACIA<br>
+ <span class="central-node-sub">1939 – 1982</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>ETAPAS FRANQUISMO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1939-50 Posguerra · Autarquía · Represión</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1950-59 Apertura · ONU <span class="date-tag">1955</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1960-70 Desarrollismo · SEAT 600 · Turismo</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1970-75 Crisis · ETA · Carrero Blanco</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>IDEOLOGÍA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Naciónalcatolicismo</strong> : Estado-Iglesia</div>
+ <div class="leaf"><div class="leaf-dot"></div>Anticomunismo · represión de "los rojos"</div>
+ <div class="leaf"><div class="leaf-dot"></div>Autoritarismo : Franco jefe de todo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Censura · campos · ejecuciones</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>TRANSICIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Muerte Franco <span class="date-tag">20/11/1975</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Juan Carlos I · Adolfo Suárez</div>
+ <div class="leaf"><div class="leaf-dot"></div>Elecciones <span class="date-tag">1977 · Constitución <span class="date-tag">1978</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div>23-F <span class="date-tag">1981 → fracaso golpe Estado</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>PSOE (Felipe González) <span class="date-tag">1982</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>FELIPE GONZÁLEZ 82-96</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>4 mandatos · Modernización económica</div>
+ <div class="leaf"><div class="leaf-dot"></div>OTAN <span class="date-tag">1982 · CEE <span class="date-tag">1986</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Estado del bienestar : sanidad, educación</div>
+ <div class="leaf"><div class="leaf-dot"></div>17 comunidades autónomas</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 6 ══ -->
+<section class="ficha-section" id="f6">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 06</div>
+ <div>
+ <h2>FRANCIA: DE LA IV A LA V REPÚBLICA</h2>
+ <p>De Gaulle · Argelia · Modernización · Independencia</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇫🇷 IV → V REPÚBLICA<br>
+ <span class="central-node-sub">De Gaulle · 1958 · "Una cierta idea de Francia"</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>CRISIS ARGELINA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Argelia : colonia desde 1830 · Pieds Noirs</div>
+ <div class="leaf"><div class="leaf-dot"></div>Toussaint Rouge <span class="date-tag">1954 → FLN</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>250.000 argelinos · 25.000 franceses muertos</div>
+ <div class="leaf"><div class="leaf-dot"></div>Acuerdos de Evian <span class="date-tag">1962 → independencia</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>V REPÚBLICA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>De Gaulle al poder <span class="date-tag">13/05/1958</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Nueva Constitución → refuerza ejecutivo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Sufragio universal directo <span class="date-tag">1962</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Sale de la OTAN <span class="date-tag">1966</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>PRESIDENTES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">58-69 De Gaulle · soberanía naciónal</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">74-81 Giscard · Ley Veil (aborto)</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">81-95 Mitterrand · 1er socialista</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">95-07 Chirac · ampliación europea</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>MODERNIZACIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Nuevo franco <span class="date-tag">1960 · DATAR <span class="date-tag">1963</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Bomba atómica y bomba H propias</div>
+ <div class="leaf"><div class="leaf-dot"></div>Política exterior independiente EE.UU./URSS</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 7 ══ -->
+<section class="ficha-section" id="f7">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 07</div>
+ <div>
+ <h2>DESAFÍOS MUNDIALES DESDE 1970</h2>
+ <p>Crisis petróleo · China · Terrorismo · Globalización</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🌐 DESAFÍOS MUNDIALES<br>
+ <span class="central-node-sub">Desde los años 70 hasta hoy</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>CRISIS PETRÓLEO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1973 Yom Kipur → embargo OPEP</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1979 Revolución iraní → 2ª crisis</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Estanflación · Fin Treinta Gloriosos</div>
+ <div class="leaf"><div class="leaf-dot"></div>G7 <span class="date-tag">1975 · Neoliberalismo (Thatcher, Reagan)</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>ASCENSO CHINA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Deng Xiaoping <span class="date-tag">1978 → "4 modernizaciónes"</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>ZEE : Shenzhen · puertas abiertas</div>
+ <div class="leaf"><div class="leaf-dot"></div>+9,5%/año PIB → 2ª economía mundial</div>
+ <div class="leaf"><div class="leaf-dot"></div>Tigres asiáticos : Corea S., Taiwán, Singapur</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>TERRORISMO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>11-S <span class="date-tag">2001 → "Guerra contra el terrorismo"</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>11-M Madrid <span class="date-tag">2004 · 193 muertos</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>París <span class="date-tag">2015 · 130 muertos</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Daesh <span class="date-tag">2006 → pseudo-Estado Siria/Irak</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CRISIS 2008 & HOY</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Burbuja inmobiliaria EE.UU. → quiebras</div>
+ <div class="leaf"><div class="leaf-dot"></div>Ruanda <span class="date-tag">1994 → 800.000 muertos en 100 días</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Crisis migratorias · cambio climático</div>
+ <div class="leaf"><div class="leaf-dot"></div>Covid-19 → fragilidad globalización</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 8 ══ -->
+<section class="ficha-section" id="f8">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 08</div>
+ <div>
+ <h2>EUROPA EN CONSTRUCCIÓN</h2>
+ <p>CECA · CEE · Maastricht · UE · Brexit</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇪🇺 CONSTRUCCIÓN EUROPEA<br>
+ <span class="central-node-sub">De la CECA (1951) al Brexit (2016)</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>ETAPAS CLAVE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>CECA <span class="date-tag">1951 · Tratados Roma <span class="date-tag">1957</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div>CEE · Unión aduanera <span class="date-tag">1968</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>España & Portugal <span class="date-tag">1986</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Maastricht <span class="date-tag">1992 → UE · ciudadanía</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Schengen <span class="date-tag">1995 · Euro <span class="date-tag">1999</span></span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>LOGROS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Paz duradera en Europa</div>
+ <div class="leaf"><div class="leaf-dot"></div>Libre circulación (Schengen)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Moneda única (euro)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Crecimiento económico (hasta 2008)</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>FRACASOS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Fracaso Constitución <span class="date-tag">2005</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Crisis refugiados · falta solidaridad</div>
+ <div class="leaf"><div class="leaf-dot"></div>Desigualdades Norte/Sur</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Brexit</strong> <span class="date-tag">2016 → UK sale de la UE</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>INSTITUCIONES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Parlamento Europeo · electo desde <span class="date-tag">1979</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Consejo de la UE · Comisión Europea</div>
+ <div class="leaf"><div class="leaf-dot"></div>Fondos de cohesión → reducir desigualdades</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 9 ══ -->
+<section class="ficha-section" id="f9">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 09</div>
+ <div>
+ <h2>FRANCIA Y ESPAÑA DESDE 1970</h2>
+ <p>Política · Sociedad · Cultura · Mundo contemporáneo</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇫🇷 🇪🇸 EVOLUCIÓN DESDE 1970<br>
+ <span class="central-node-sub">Sociedad · Política · Integración internaciónal</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>SOCIEDAD FRANCESA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Ley Veil <span class="date-tag">1975 · Paridad política <span class="date-tag">1999</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Mayo del 68 → transformación social</div>
+ <div class="leaf"><div class="leaf-dot"></div>Inmigración · "Marche des Beurs" <span class="date-tag">1983</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>PACS <span class="date-tag">1999 · Mariage pour Tous <span class="date-tag">2013</span></span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>ECONOMÍA FR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Treinta Gloriosos <span class="date-tag">1945-73 → crecimiento</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1974 Crisis → 2,2M parados en <span class="date-tag">1988</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div>RMI <span class="date-tag">1988 · Desindustrialización</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>ESPAÑA INTERNACIONAL</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>OTAN <span class="date-tag">1982 · CEE <span class="date-tag">1986</span> · Euro <span class="date-tag">1999</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div>JJ.OO. Barcelona <span class="date-tag">1992 · Expo Sevilla</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>América Latina + Mediterráneo : prioridad</div>
+ <div class="leaf"><div class="leaf-dot"></div>1er receptor Erasmus+ : 48.203 estudiantes</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>DEMOGRAFÍA ES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Natalidad : 2,1 hijos <span class="date-tag">1981 → 1,16 <span class="date-tag">1998</span></span></div>
+ <div class="leaf"><div class="leaf-dot"></div>6,84M inmigrantes = 14,44% población <span class="date-tag">2024</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Estado del bienestar : sanidad · educación</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 10 ══ -->
+<section class="ficha-section" id="f10">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 10</div>
+ <div>
+ <h2>VOCABULARIO ESENCIAL</h2>
+ <p>Conceptos políticos · Económicos · Violencia y derechos</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 📖 VOCABULARIO ESENCIAL<br>
+ <span class="central-node-sub">Los conceptos que debes dominar para el examen</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>POLÍTICA & HISTORIA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Totalitarismo</strong> — contrôle total, parti unique, leader (Bobbio)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Guerra Fría</strong> — conflit idéologique sans guerre directe</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Descolonización</strong> — indépendance des colonies 1945-75</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Memoria histórica</strong> — recuerdo colectivo del pasado</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Telón de acero</strong> — división Europa Oeste/Este (Churchill)</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>ECONOMÍA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Autarquía</strong> — autosuficiencia · franquismo 1939-50</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Estanflación</strong> — inflación + estancamiento + paro</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Neoliberalismo</strong> — mínimo Estado · privatización</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Plan Marshall</strong> — ayuda EE.UU. Europa occidental <span class="date-tag">1947</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Tigres asiáticos</strong> — Corea S., Taiwán, Singapur, HK</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>VIOLENCIA & DERECHOS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Genocidio</strong> — exterminio sistemático de un grupo</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Shoa</strong> — 6M judíos exterminados por nazismo</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Islamismo radical</strong> — imposer sa vision par la violence</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Refugiado</strong> — huye de guerras o persecuciones</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Plan Cóndor</strong> — dictaduras latinoam. apoyadas EE.UU.</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>À RETENIR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Bipolarización</strong> — monde en 2 blocs antagonistes</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Multipolaridad</strong> — varias potencias, sin hegemonía única</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Estraperlo</strong> — mercado negro España años 40</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Globalización</strong> — intensificación intercambios mundiales</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+</main>
+
+<footer>
+ BACHIBAC · HISTORIA · CARTES MENTALES &nbsp;·&nbsp; © Constance | @constance.cgh &nbsp;·&nbsp; Retrouve toutes mes fiches sur mes réseaux
+</footer>
+
+<script>
+function show(n) {
+ document.querySelectorAll('.ficha-section').forEach(s => s.classList.remove('active'));
+ document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+ document.getElementById('f' + n).classList.add('active');
+ document.querySelectorAll('.nav-btn')[n-1].classList.add('active');
+ window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
