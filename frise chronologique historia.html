@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frise Chronologique · Historia Bachibac · @constance.cgh</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0F1923;
+    --surface: #162030;
+    --accent: #2D6A4F;
+    --accent-d: #1B4332;
+    --accent-l: #40916C;
+    --gold: #C9A84C;
+    --cream: #FCE8DF;
+    --white: #F8F8F6;
+    --light: #8A9BB0;
+    --red: #B22222;
+    --orange: #D4500A;
+    --card-bg: #1C2D3E;
+    --border: rgba(255,255,255,0.07);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--accent-d);
+    border-bottom: 3px solid var(--gold);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left h1 {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--white);
+  }
+  .header-left p {
+    font-size: 10px;
+    font-weight: 300;
+    color: var(--cream);
+    margin-top: 2px;
+  }
+  .header-tag {
+    background: rgba(255,255,255,0.12);
+    color: var(--cream);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+  }
+
+  /* ── FILTERS ── */
+  .filters {
+    background: var(--surface);
+    padding: 12px 32px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-btn {
+    background: rgba(255,255,255,0.06);
+    color: var(--light);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Poppins', sans-serif;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { color: var(--white); border-color: rgba(255,255,255,0.3); }
+  .filter-btn.active {
+    font-weight: 700;
+    color: var(--accent-d);
+  }
+  .filter-btn[data-cat="all"].active { background: var(--gold); border-color: var(--gold); }
+  .filter-btn[data-cat="sgm"].active { background: #E74C3C; border-color: #E74C3C; color: white; }
+  .filter-btn[data-cat="gf"].active { background: #2980B9; border-color: #2980B9; color: white; }
+  .filter-btn[data-cat="es"].active { background: var(--orange); border-color: var(--orange); color: white; }
+  .filter-btn[data-cat="fr"].active { background: var(--accent-l); border-color: var(--accent-l); color: white; }
+  .filter-btn[data-cat="eu"].active { background: #8E44AD; border-color: #8E44AD; color: white; }
+  .filter-btn[data-cat="monde"].active { background: #16A085; border-color: #16A085; color: white; }
+
+  /* ── MAIN LAYOUT ── */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    height: calc(100vh - 103px);
+  }
+
+  /* ── TIMELINE ── */
+  .timeline-wrap {
+    overflow-y: auto;
+    padding: 24px 32px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+  }
+  .timeline-wrap::-webkit-scrollbar { width: 4px; }
+  .timeline-wrap::-webkit-scrollbar-track { background: transparent; }
+  .timeline-wrap::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+  .timeline {
+    position: relative;
+    padding-left: 80px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 60px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--gold), var(--accent), var(--gold));
+    opacity: 0.4;
+  }
+
+  /* Era label */
+  .era-label {
+    position: relative;
+    margin: 24px 0 12px -80px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .era-label span {
+    background: var(--accent-d);
+    color: var(--gold);
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--gold);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .era-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Event item */
+  .event {
+    position: relative;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .event.hidden { display: none; }
+
+  /* Dot on timeline */
+  .event-dot {
+    position: absolute;
+    left: -24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg);
+    transition: all 0.2s;
+    z-index: 2;
+  }
+  .event[data-cat="sgm"] .event-dot { background: #E74C3C; }
+  .event[data-cat="gf"] .event-dot { background: #2980B9; }
+  .event[data-cat="es"] .event-dot { background: var(--orange); }
+  .event[data-cat="fr"] .event-dot { background: var(--accent-l); }
+  .event[data-cat="eu"] .event-dot { background: #8E44AD; }
+  .event[data-cat="monde"] .event-dot { background: #16A085; }
+
+  .event:hover .event-dot, .event.active .event-dot {
+    transform: translateY(-50%) scale(1.4);
+    box-shadow: 0 0 10px currentColor;
+  }
+
+  /* Event card */
+  .event-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+    border-left: 3px solid var(--accent);
+  }
+  .event[data-cat="sgm"] .event-card { border-left-color: #E74C3C; }
+  .event[data-cat="gf"] .event-card { border-left-color: #2980B9; }
+  .event[data-cat="es"] .event-card { border-left-color: var(--orange); }
+  .event[data-cat="fr"] .event-card { border-left-color: var(--accent-l); }
+  .event[data-cat="eu"] .event-card { border-left-color: #8E44AD; }
+  .event[data-cat="monde"] .event-card { border-left-color: #16A085; }
+
+  .event:hover .event-card, .event.active .event-card {
+    background: #243548;
+    border-color: rgba(255,255,255,0.15);
+  }
+  .event.active .event-card {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .event-date {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    min-width: 52px;
+    white-space: nowrap;
+  }
+  .event-title {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--white);
+    line-height: 1.4;
+  }
+  .event-flag {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+  }
+  .detail-panel::-webkit-scrollbar { width: 4px; }
+  .detail-panel::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+  .detail-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--light);
+    text-align: center;
+    padding: 32px;
+    gap: 12px;
+  }
+  .detail-empty .icon { font-size: 36px; opacity: 0.4; }
+  .detail-empty p { font-size: 12px; line-height: 1.6; }
+
+  .detail-content { display: none; padding: 24px; }
+  .detail-content.visible { display: block; }
+
+  .detail-header {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-date {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .detail-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--white);
+    margin-top: 6px;
+    line-height: 1.4;
+  }
+  .detail-cat {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-top: 8px;
+    text-transform: uppercase;
+  }
+
+  .detail-section { margin-bottom: 14px; }
+  .detail-section-title {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .detail-text {
+    font-size: 11px;
+    color: #B0C4D8;
+    line-height: 1.7;
+  }
+  .detail-bullet {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 11px;
+    color: #B0C4D8;
+    line-height: 1.5;
+  }
+  .detail-bullet::before {
+    content: '→';
+    color: var(--gold);
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+  .detail-bullet strong { color: var(--white); }
+
+  .link-tag {
+    display: inline-block;
+    background: rgba(45,106,79,0.2);
+    color: var(--accent-l);
+    border: 1px solid var(--accent);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 8px;
+    margin: 2px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--accent-d);
+    color: var(--cream);
+    font-size: 10px;
+    text-align: center;
+    padding: 10px;
+    border-top: 2px solid var(--gold);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>✦ FRISE CHRONOLOGIQUE · HISTORIA BACHIBAC</h1>
+    <p>De 1919 à 2016 · Clique sur un événement pour voir le contexte</p>
+  </div>
+  <div class="header-tag">TERMINALE BACHIBAC</div>
+</header>
+
+<div class="filters">
+  <button class="filter-btn active" data-cat="all" onclick="filter('all')">🌍 Tout</button>
+  <button class="filter-btn" data-cat="sgm" onclick="filter('sgm')">⚔️ 2ª GM</button>
+  <button class="filter-btn" data-cat="gf" onclick="filter('gf')">🧱 Guerra Fría</button>
+  <button class="filter-btn" data-cat="es" onclick="filter('es')">🇪🇸 España</button>
+  <button class="filter-btn" data-cat="fr" onclick="filter('fr')">🇫🇷 Francia</button>
+  <button class="filter-btn" data-cat="eu" onclick="filter('eu')">🇪🇺 Europa</button>
+  <button class="filter-btn" data-cat="monde" onclick="filter('monde')">🌐 Mundo</button>
+</div>
+
+<div class="layout">
+<div class="timeline-wrap">
+<div class="timeline">
+
+  <div class="era-label"><span>ENTREGUERRAS · 1919-1939</span></div>
+
+  <div class="event" data-cat="monde" data-id="1919" onclick="showDetail('1919')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1919</div>
+      <div class="event-flag">🌍</div>
+      <div class="event-title">Tratado de Versalles — humillación de Alemania</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="monde" data-id="1929" onclick="showDetail('1929')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1929</div>
+      <div class="event-flag">📉</div>
+      <div class="event-title">Crisis económica mundial — Gran Depresión</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="monde" data-id="1933" onclick="showDetail('1933')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1933</div>
+      <div class="event-flag">⚠️</div>
+      <div class="event-title">Hitler canciller de Alemania — inicio régimen nazi</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="es" data-id="1936" onclick="showDetail('1936')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1936-39</div>
+      <div class="event-flag">🇪🇸</div>
+      <div class="event-title">Guerra Civil española — victoria de Franco</div>
+    </div>
+  </div>
+
+  <div class="era-label"><span>2ª GUERRA MUNDIAL · 1939-1945</span></div>
+
+  <div class="event" data-cat="sgm" data-id="1939" onclick="showDetail('1939')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">01/09/1939</div>
+      <div class="event-flag">⚔️</div>
+      <div class="event-title">Alemania invade Polonia — inicio de la SGM</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="sgm" data-id="1940v" onclick="showDetail('1940v')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">May. 1940</div>
+      <div class="event-flag">🇫🇷</div>
+      <div class="event-title">Invasión de Francia — Régimen de Vichy (Pétain)</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="fr" data-id="1940dg" onclick="showDetail('1940dg')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">18/06/1940</div>
+      <div class="event-flag">📻</div>
+      <div class="event-title">Llamamiento de De Gaulle desde Londres</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="sgm" data-id="1941b" onclick="showDetail('1941b')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">Jun. 1941</div>
+      <div class="event-flag">❄️</div>
+      <div class="event-title">Operación Barbarroja — invasión alemana de la URSS</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="sgm" data-id="1941ph" onclick="showDetail('1941ph')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">07/12/1941</div>
+      <div class="event-flag">🇺🇸</div>
+      <div class="event-title">Pearl Harbor — EE.UU. entra en guerra</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="sgm" data-id="1942w" onclick="showDetail('1942w')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">Ene. 1942</div>
+      <div class="event-flag">💀</div>
+      <div class="event-title">Conferencia de Wannsee — "Solución Final"</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="sgm" data-id="1943st" onclick="showDetail('1943st')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">Feb. 1943</div>
+      <div class="event-flag">🔄</div>
+      <div class="event-title">Batalla de Stalingrado — punto de inflexión</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="sgm" data-id="1944dd" onclick="showDetail('1944dd')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">06/06/1944</div>
+      <div class="event-flag">🛥️</div>
+      <div class="event-title">Día D — Desembarco en Normandía</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="fr" data-id="1944paris" onclick="showDetail('1944paris')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">25/08/1944</div>
+      <div class="event-flag">🗼</div>
+      <div class="event-title">Liberación de París</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="sgm" data-id="1945fin" onclick="showDetail('1945fin')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">08/05/1945</div>
+      <div class="event-flag">🏳️</div>
+      <div class="event-title">Capitulación alemana — fin en Europa</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="sgm" data-id="1945bomb" onclick="showDetail('1945bomb')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">Ago. 1945</div>
+      <div class="event-flag">☢️</div>
+      <div class="event-title">Bombas atómicas Hiroshima y Nagasaki — fin SGM</div>
+    </div>
+  </div>
+
+  <div class="era-label"><span>GUERRA FRÍA · 1947-1991</span></div>
+
+  <div class="event" data-cat="gf" data-id="1947" onclick="showDetail('1947')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1947</div>
+      <div class="event-flag">💵</div>
+      <div class="event-title">Plan Marshall — inicio oficial Guerra Fría</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="gf" data-id="1948b" onclick="showDetail('1948b')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1948-49</div>
+      <div class="event-flag">✈️</div>
+      <div class="event-title">Bloqueo de Berlín — puente aéreo · RFA/RDA</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="gf" data-id="1949otan" onclick="showDetail('1949otan')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1949</div>
+      <div class="event-flag">🛡️</div>
+      <div class="event-title">Creación de la OTAN · Bomba atómica soviética</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="eu" data-id="1951ceca" onclick="showDetail('1951ceca')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1951</div>
+      <div class="event-flag">🇪🇺</div>
+      <div class="event-title">CECA — primer paso hacia Europa unida</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="gf" data-id="1950coree" onclick="showDetail('1950coree')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1950-53</div>
+      <div class="event-flag">🪖</div>
+      <div class="event-title">Guerra de Corea — paralelo 38</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="fr" data-id="1954dien" onclick="showDetail('1954dien')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1954</div>
+      <div class="event-flag">🇫🇷</div>
+      <div class="event-title">Dien Bien Phu — Francia pierde Indochina · inicio guerra Argelia</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="eu" data-id="1957rome" onclick="showDetail('1957rome')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1957</div>
+      <div class="event-flag">🇪🇺</div>
+      <div class="event-title">Tratados de Roma — nacimiento de la CEE</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="fr" data-id="1958vr" onclick="showDetail('1958vr')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1958</div>
+      <div class="event-flag">🇫🇷</div>
+      <div class="event-title">V República — De Gaulle al poder · nueva Constitución</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="gf" data-id="1961mur" onclick="showDetail('1961mur')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1961</div>
+      <div class="event-flag">🧱</div>
+      <div class="event-title">Construcción del Muro de Berlín</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="gf" data-id="1962cuba" onclick="showDetail('1962cuba')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1962</div>
+      <div class="event-flag">☢️</div>
+      <div class="event-title">Crisis de los misiles de Cuba — borde nuclear</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="fr" data-id="1962arg" onclick="showDetail('1962arg')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1962</div>
+      <div class="event-flag">🕊️</div>
+      <div class="event-title">Independencia de Argelia — Acuerdos de Evian</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="gf" data-id="1964viet" onclick="showDetail('1964viet')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1964-73</div>
+      <div class="event-flag">🌿</div>
+      <div class="event-title">Guerra de Vietnam — derrota estadounidense</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="fr" data-id="1968mai" onclick="showDetail('1968mai')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1968</div>
+      <div class="event-flag">✊</div>
+      <div class="event-title">Mayo del 68 en Francia — transformación social</div>
+    </div>
+  </div>
+
+  <div class="era-label"><span>CRISIS & TRANSICIONES · 1973-1989</span></div>
+
+  <div class="event" data-cat="monde" data-id="1973petro" onclick="showDetail('1973petro')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1973</div>
+      <div class="event-flag">🛢️</div>
+      <div class="event-title">Crisis del petróleo — fin de los Treinta Gloriosos</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="es" data-id="1975franco" onclick="showDetail('1975franco')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">20/11/1975</div>
+      <div class="event-flag">🇪🇸</div>
+      <div class="event-title">Muerte de Franco — inicio Transición democrática</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="es" data-id="1978const" onclick="showDetail('1978const')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1978</div>
+      <div class="event-flag">📜</div>
+      <div class="event-title">Constitución española — monarquía parlamentaria</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="monde" data-id="1979iran" onclick="showDetail('1979iran')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1979</div>
+      <div class="event-flag">🕌</div>
+      <div class="event-title">Revolución islámica en Irán · 2ª crisis petróleo</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="fr" data-id="1981mitt" onclick="showDetail('1981mitt')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1981</div>
+      <div class="event-flag">🇫🇷</div>
+      <div class="event-title">Mitterrand — 1er presidente socialista de la V República</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="es" data-id="1981tejero" onclick="showDetail('1981tejero')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">23/02/1981</div>
+      <div class="event-flag">⚠️</div>
+      <div class="event-title">Golpe de Estado de Tejero (23-F) — fracaso</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="es" data-id="1982psoe" onclick="showDetail('1982psoe')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1982</div>
+      <div class="event-flag">🇪🇸</div>
+      <div class="event-title">Felipe González (PSOE) — consolidación democracia</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="eu" data-id="1986es" onclick="showDetail('1986es')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1986</div>
+      <div class="event-flag">🇪🇺</div>
+      <div class="event-title">España y Portugal entran en la CEE</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="gf" data-id="1989mur" onclick="showDetail('1989mur')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1989</div>
+      <div class="event-flag">🧱</div>
+      <div class="event-title">Caída del Muro de Berlín — fin del mundo bipolar</div>
+    </div>
+  </div>
+
+  <div class="era-label"><span>MUNDO CONTEMPORÁNEO · 1991-2016</span></div>
+
+  <div class="event" data-cat="gf" data-id="1991urss" onclick="showDetail('1991urss')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1991</div>
+      <div class="event-flag">☭</div>
+      <div class="event-title">Disolución de la URSS — fin de la Guerra Fría</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="eu" data-id="1992maas" onclick="showDetail('1992maas')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1992</div>
+      <div class="event-flag">🇪🇺</div>
+      <div class="event-title">Tratado de Maastricht — nacimiento de la UE</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="es" data-id="1992bcn" onclick="showDetail('1992bcn')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">1992</div>
+      <div class="event-flag">🏅</div>
+      <div class="event-title">JJ.OO. Barcelona · Expo Sevilla — España moderna</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="monde" data-id="2001" onclick="showDetail('2001')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">11/09/2001</div>
+      <div class="event-flag">💥</div>
+      <div class="event-title">11-S — atentados Al Qaeda · "Guerra contra el terrorismo"</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="es" data-id="2004" onclick="showDetail('2004')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">11/03/2004</div>
+      <div class="event-flag">💣</div>
+      <div class="event-title">11-M Madrid — 193 muertos</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="monde" data-id="2008" onclick="showDetail('2008')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">2008</div>
+      <div class="event-flag">📉</div>
+      <div class="event-title">Crisis financiera mundial — quiebras bancarias</div>
+    </div>
+  </div>
+
+  <div class="event" data-cat="eu" data-id="2016brexit" onclick="showDetail('2016brexit')">
+    <div class="event-dot"></div>
+    <div class="event-card">
+      <div class="event-date">2016</div>
+      <div class="event-flag">🇬🇧</div>
+      <div class="event-title">Brexit — Reino Unido vota salir de la UE</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ── DETAIL PANEL ── -->
+<div class="detail-panel">
+  <div class="detail-empty" id="emptyState">
+    <div class="icon">👆</div>
+    <p>Clique sur un événement<br>pour voir le contexte détaillé</p>
+  </div>
+  <div class="detail-content" id="detailContent"></div>
+</div>
+</div>
+
+<footer>
+  BACHIBAC · HISTORIA · FRISE CHRONOLOGIQUE &nbsp;·&nbsp; © Constance | @constance.cgh &nbsp;·&nbsp; Retrouve toutes mes fiches sur mes réseaux
+</footer>
+
+<script>
+const events = {
+  '1919': {
+    date: '1919', title: 'Tratado de Versalles',
+    cat: 'monde', catLabel: '🌍 Mundo', catColor: '#16A085',
+    context: 'Tras la 1ª Guerra Mundial, Alemania es humillada: pierde territorios, debe pagar enormes reparaciones y ve su ejército limitado.',
+    points: [
+      'Alemania pierde Alsacia-Lorena, el corredor de Danzig y sus colonias',
+      '<strong>Deudas inmensas</strong> → Gran Depresión y resentimiento nacional',
+      'Germen del nazismo → Hitler utilizará el "diktat" de Versalles como propaganda',
+      'Creación de la <strong>Sociedad de Naciones</strong> (antecesora de la ONU)',
+    ],
+    links: ['Causas 2ª GM', 'Nazismo', 'Hitler']
+  },
+  '1929': {
+    date: '1929', title: 'Crisis económica mundial — Gran Depresión',
+    cat: 'monde', catLabel: '🌍 Mundo', catColor: '#16A085',
+    context: 'El crash bursátil de Wall Street provoca una depresión económica mundial sin precedentes.',
+    points: [
+      'Quiebra de miles de bancos y empresas en EE.UU. y Europa',
+      '<strong>Desempleo masivo</strong> → terreno fértil para el totalitarismo',
+      'Favorece el ascenso de Hitler en Alemania y Mussolini en Italia',
+      'Fin del orden económico liberal de los años 20',
+    ],
+    links: ['Totalitarismo', 'Causas 2ª GM']
+  },
+  '1933': {
+    date: '1933', title: 'Hitler canciller de Alemania',
+    cat: 'monde', catLabel: '🌍 Mundo', catColor: '#16A085',
+    context: 'Adolf Hitler es nombrado canciller de Alemania el 30 de enero de 1933. Inicia la construcción del régimen nazi.',
+    points: [
+      'Incendio del Reichstag → pretexto para suspender libertades',
+      '<strong>NSDAP</strong> → partido único, control total del Estado',
+      'Leyes de Núremberg (1935) → segregación racial de los judíos',
+      'Rearme y expansión agresiva en violación de Versalles',
+    ],
+    links: ['2ª GM', 'Holocausto', 'Totalitarismo']
+  },
+  '1936': {
+    date: '1936-1939', title: 'Guerra Civil española',
+    cat: 'es', catLabel: '🇪🇸 España', catColor: '#D4500A',
+    context: 'El golpe militar del general Franco contra la República española desencadena una guerra civil de 3 años.',
+    points: [
+      'Sublevación militar del 18 de julio de 1936',
+      'Intervención extranjera: <strong>nazis y fascistas apoyan a Franco</strong>, URSS a la República',
+      'Política de "no intervención" de Francia y Reino Unido',
+      '<strong>500.000 republicanos</strong> se exilian tras la derrota en 1939',
+    ],
+    links: ['Franquismo', 'Memoria histórica', 'Exilio']
+  },
+  '1939': {
+    date: '01/09/1939', title: 'Alemania invade Polonia',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'La invasión alemana de Polonia con la técnica de la Blitzkrieg desencadena la Segunda Guerra Mundial.',
+    points: [
+      '<strong>Blitzkrieg</strong> (guerra relámpago) → Polonia conquistada en 5 semanas',
+      'Francia y Reino Unido declaran la guerra a Alemania el 3 de septiembre',
+      'Pacto germano-soviético (Ribbentrop-Molotov) → URSS no interviene',
+      'Inicio del conflicto más destructivo de la historia: 60-70 millones de muertos',
+    ],
+    links: ['2ª GM', 'Fases guerra', 'Blitzkrieg']
+  },
+  '1940v': {
+    date: 'Mayo-Junio 1940', title: 'Invasión de Francia — Régimen de Vichy',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'En seis semanas, Alemania derrota a Francia. El armisticio divide el país en zona ocupada (norte) y zona libre (sur, Vichy).',
+    points: [
+      'Armisticio de Compiègne (22/06/1940) → humillación francesa',
+      '<strong>Pétain</strong> → jefe del Estado francés, colaboración con Alemania',
+      'Fin de la III República · Estatuto de los judíos',
+      '<strong>Vel d\'Hiv (1942)</strong> → rafle de judíos parisinos por la policía francesa',
+    ],
+    links: ['Resistencia', 'De Gaulle', 'Colaboración']
+  },
+  '1940dg': {
+    date: '18/06/1940', title: 'Llamamiento de De Gaulle',
+    cat: 'fr', catLabel: '🇫🇷 Francia', catColor: '#2D6A4F',
+    context: 'Desde Londres, el general De Gaulle llama por radio a los franceses a continuar la resistencia contra la ocupación nazi.',
+    points: [
+      '"La llama de la resistencia francesa no debe apagarse"',
+      'Crea las <strong>Fuerzas Francesas Libres</strong> (FFL)',
+      'Maquis → grupos armados de resistencia interior',
+      '<strong>"La Nueve"</strong> → compañía de exiliados españoles, 1ª en entrar en París',
+    ],
+    links: ['Resistencia', 'V República', 'Liberación']
+  },
+  '1941b': {
+    date: 'Junio 1941', title: 'Operación Barbarroja',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'Hitler rompe el pacto con Stalin e invade la URSS con 3 millones de soldados. Grave error estratégico.',
+    points: [
+      'Mayor invasión terrestre de la historia',
+      'Objetivo: destruir el comunismo y conquistar el "espacio vital"',
+      'La URSS, destruida en los primeros meses, se recupera gracias al frío y la resistencia',
+      'Lleva a la <strong>Batalla de Stalingrado</strong> (1942-43) → punto de inflexión',
+    ],
+    links: ['Stalingrado', 'Frente oriental', 'URSS']
+  },
+  '1941ph': {
+    date: '07/12/1941', title: 'Pearl Harbor — EE.UU. entra en guerra',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'Japón ataca la base naval estadounidense de Pearl Harbor. EE.UU. declara la guerra al Eje al día siguiente.',
+    points: [
+      '2.400 americanos muertos en el ataque sorpresa japonés',
+      'EE.UU. pasa de la neutralidad a la guerra total',
+      'Refuerza considerablemente el campo aliado',
+      'Abre el frente del <strong>Pacífico</strong> → Midway (1942) → derrota japonesa',
+    ],
+    links: ['Aliados', 'Frente Pacífico', 'Bomba atómica']
+  },
+  '1942w': {
+    date: 'Enero 1942', title: 'Conferencia de Wannsee',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'En una villa a las afueras de Berlín, altos funcionarios nazis organizan en secreto el exterminio industrial de los judíos europeos.',
+    points: [
+      'Planificación de la <strong>"Solución Final"</strong> (Endlösung)',
+      'Creación de campos de exterminio: Auschwitz, Treblinka, Sobibor',
+      '<strong>6 millones de judíos</strong> exterminados (Shoa/Holocausto)',
+      'También víctimas: gitanos (500.000), homosexuales, discapacitados',
+    ],
+    links: ['Holocausto', 'Campos exterminio', 'Núremberg']
+  },
+  '1943st': {
+    date: 'Febrero 1943', title: 'Batalla de Stalingrado — punto de inflexión',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'La rendición del VI Ejército alemán en Stalingrado marca el inicio del fin para el Eje en el frente oriental.',
+    points: [
+      '200.000 soldados alemanes rendidos, incluido el mariscal Paulus',
+      'La URSS pasa de la defensiva a la ofensiva',
+      '<strong>Punto de inflexión</strong> → Alemania no recuperará la iniciativa',
+      'Más de 1 millón de muertos en esta sola batalla',
+    ],
+    links: ['Frente oriental', 'Fases guerra', 'Liberación']
+  },
+  '1944dd': {
+    date: '06/06/1944', title: 'Día D — Desembarco en Normandía',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'La mayor operación anfibia de la historia. 156.000 soldados aliados desembarcan en las playas de Normandía.',
+    points: [
+      'Operación Overlord → 5 playas: Utah, Omaha, Gold, Juno, Sword',
+      'Abre un <strong>segundo frente</strong> al Oeste contra Alemania',
+      'La Resistencia francesa participa activamente',
+      'Permite la <strong>liberación de París</strong> el 25 de agosto de 1944',
+    ],
+    links: ['Liberación París', 'La Resistencia', 'Fin guerra']
+  },
+  '1944paris': {
+    date: '25/08/1944', title: 'Liberación de París',
+    cat: 'fr', catLabel: '🇫🇷 Francia', catColor: '#2D6A4F',
+    context: 'París es liberada por las tropas aliadas y la Resistencia francesa. De Gaulle entra triunfalmente en la ciudad.',
+    points: [
+      '<strong>"La Nueve"</strong> → compañía de republicanos españoles entre los 1eros en entrar',
+      'De Gaulle encabeza el desfile por los Campos Elíseos',
+      'La Depuración (épuration) → juicios contra colaboracionistas',
+      'Restauración de la legalidad republicana francesa',
+    ],
+    links: ['Resistencia', 'De Gaulle', 'Exiliados españoles']
+  },
+  '1945fin': {
+    date: '08/05/1945', title: 'Capitulación alemana — fin en Europa',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'Alemania se rinde incondicionalmente. Hitler se suicidó el 30 de abril. La guerra termina en Europa.',
+    points: [
+      'Firma de la capitulación a las 23:01 del 8 de mayo',
+      'Juicios de Núremberg (1945-46) → primeros juicios por <strong>crímenes contra la humanidad</strong>',
+      'Creación de la <strong>ONU</strong> (26 de junio de 1945)',
+      'Inicio de la ocupación de Alemania por los 4 aliados → germen de la Guerra Fría',
+    ],
+    links: ['ONU', 'Núremberg', 'Guerra Fría']
+  },
+  '1945bomb': {
+    date: 'Agosto 1945', title: 'Bombas atómicas — fin de la SGM',
+    cat: 'sgm', catLabel: '⚔️ 2ª GM', catColor: '#E74C3C',
+    context: 'EE.UU. lanza dos bombas atómicas sobre Japón. El 2 de septiembre Japón se rinde: fin de la 2ª Guerra Mundial.',
+    points: [
+      '<strong>Hiroshima</strong> (6 ago.) → 80.000 muertos instantáneos',
+      '<strong>Nagasaki</strong> (9 ago.) → 40.000 muertos instantáneos',
+      'Capitulación japonesa el 2 de septiembre de 1945',
+      'Inaugura la era nuclear → carrera armamentística de la Guerra Fría',
+    ],
+    links: ['Carrera nuclear', 'Guerra Fría', 'Fin SGM']
+  },
+  '1947': {
+    date: '1947', title: 'Plan Marshall — inicio Guerra Fría',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'EE.UU. lanza el Plan Marshall para reconstruir Europa occidental. La Doctrina Truman divide el mundo en dos bloques.',
+    points: [
+      '<strong>13.000 millones de dólares</strong> para reconstruir Europa occidental',
+      'Doctrina Truman → contener el comunismo a escala mundial',
+      'URSS rechaza y crea el <strong>COMECON</strong> como respuesta',
+      'Inicio oficial de la Guerra Fría: capitalismo vs comunismo',
+    ],
+    links: ['Bloques', 'OTAN', 'COMECON']
+  },
+  '1948b': {
+    date: '1948-1949', title: 'Bloqueo de Berlín',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'La URSS bloquea todos los accesos terrestres a Berlín occidental. EE.UU. responde con un puente aéreo histórico.',
+    points: [
+      'URSS corta el acceso terrestre a Berlín occidental en junio 1948',
+      '<strong>Puente aéreo</strong> → 277.000 vuelos en 11 meses abastecen la ciudad',
+      'La URSS levanta el bloqueo en mayo de 1949',
+      'Lleva a la creación de la <strong>OTAN</strong> (1949) y la división en RFA/RDA',
+    ],
+    links: ['RFA/RDA', 'OTAN', 'Berlín']
+  },
+  '1949otan': {
+    date: '1949', title: 'Creación de la OTAN',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'Nace la Organización del Tratado del Atlántico Norte, alianza militar occidental liderada por EE.UU.',
+    points: [
+      '12 países fundadores: EE.UU., Canadá, Francia, Reino Unido…',
+      'Principio de <strong>defensa colectiva</strong>: ataque a uno = ataque a todos',
+      'La URSS responde con el <strong>Pacto de Varsovia</strong> en 1955',
+      'Francia abandona el mando integrado en <strong>1966</strong> (De Gaulle)',
+    ],
+    links: ['Pacto Varsovia', 'De Gaulle', 'Bloques']
+  },
+  '1951ceca': {
+    date: '1951', title: 'CECA — primer paso europeo',
+    cat: 'eu', catLabel: '🇪🇺 Europa', catColor: '#8E44AD',
+    context: 'Francia, Alemania, Italia y el Benelux crean la Comunidad Europea del Carbón y del Acero: el primer paso hacia la integración europea.',
+    points: [
+      'Gestión común del carbón y del acero → reconciliación franco-alemana',
+      'Iniciativa de <strong>Schuman y Monnet</strong> → "nunca más la guerra"',
+      'Precede a los <strong>Tratados de Roma</strong> (1957) y la CEE',
+      'Primer ejemplo de supranacionalidad en Europa',
+    ],
+    links: ['CEE', 'UE', 'Maastricht']
+  },
+  '1950coree': {
+    date: '1950-1953', title: 'Guerra de Corea',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'Primer conflicto armado de la Guerra Fría. Corea del Norte (apoyada por China y URSS) invade el Sur (apoyado por EE.UU.).',
+    points: [
+      'Corea del Norte cruza el paralelo 38 en junio de 1950',
+      'Intervención de EE.UU. bajo bandera de la ONU',
+      '<strong>Armisticio de Panmunjom</strong> (1953) → paralelo 38 permanente',
+      'Modelo de "guerra proxy" de la Guerra Fría',
+    ],
+    links: ['Guerra Fría', 'Vietnam', 'Descolonización']
+  },
+  '1954dien': {
+    date: '1954', title: 'Dien Bien Phu e inicio guerra de Argelia',
+    cat: 'fr', catLabel: '🇫🇷 Francia', catColor: '#2D6A4F',
+    context: 'Francia pierde su colonia indochina tras la derrota de Dien Bien Phu. El mismo año estalla la guerra de independencia de Argelia.',
+    points: [
+      'Derrota francesa en Dien Bien Phu → independencia de Vietnam',
+      '<strong>Toussaint Rouge</strong> (1 nov. 1954) → inicio insurrección FLN en Argelia',
+      '250.000 argelinos y 25.000 franceses muertos en la guerra',
+      'Crisis conduce al retorno de <strong>De Gaulle</strong> y la V República (1958)',
+    ],
+    links: ['V República', 'De Gaulle', 'Descolonización']
+  },
+  '1957rome': {
+    date: '1957', title: 'Tratados de Roma — nacimiento de la CEE',
+    cat: 'eu', catLabel: '🇪🇺 Europa', catColor: '#8E44AD',
+    context: 'Los 6 países de la CECA firman los Tratados de Roma, creando la Comunidad Económica Europea (mercado común) y EURATOM.',
+    points: [
+      'Creación del <strong>mercado común</strong> → libre circulación de bienes y personas',
+      '<strong>EURATOM</strong> → cooperación en energía nuclear',
+      'Unión aduanera completa en 1968',
+      'Paso decisivo hacia la integración europea → futura UE',
+    ],
+    links: ['CECA', 'Maastricht', 'UE']
+  },
+  '1958vr': {
+    date: '1958', title: 'V República francesa',
+    cat: 'fr', catLabel: '🇫🇷 Francia', catColor: '#2D6A4F',
+    context: 'La crisis argelina provoca el hundimiento de la IV República. De Gaulle es llamado al poder y funda la V República.',
+    points: [
+      'Nueva Constitución → refuerzo del poder ejecutivo',
+      'El presidente elegido por <strong>sufragio universal directo</strong> desde 1962',
+      '"Una cierta idea de Francia" → soberanía nacional e independencia',
+      'Francia abandona el mando integrado de la OTAN en <strong>1966</strong>',
+    ],
+    links: ['De Gaulle', 'OTAN', 'Argelia']
+  },
+  '1961mur': {
+    date: '1961', title: 'Construcción del Muro de Berlín',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'La URSS ordena construir un muro dividiendo Berlín para detener la fuga masiva de alemanes del Este al Oeste.',
+    points: [
+      '3,5 millones de alemanes del Este habían emigrado al Oeste desde 1949',
+      'Muro de 155 km → símbolo del <strong>Telón de Acero</strong>',
+      '136 personas mueren intentando cruzarlo',
+      'Caerá el <strong>9 de noviembre de 1989</strong> → fin del mundo bipolar',
+    ],
+    links: ['Telón de Acero', 'Caída del Muro', 'RFA/RDA']
+  },
+  '1962cuba': {
+    date: 'Octubre 1962', title: 'Crisis de los misiles de Cuba',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'El momento más peligroso de la Guerra Fría: EE.UU. y URSS al borde de la guerra nuclear durante 13 días.',
+    points: [
+      'EE.UU. descubre misiles soviéticos en Cuba → Kennedy impone bloqueo naval',
+      '13 días de tensión extrema → riesgo real de guerra nuclear',
+      'Acuerdo secreto: URSS retira misiles, EE.UU. promete no invadir Cuba',
+      'Lleva a la creación del <strong>teléfono rojo</strong> Moscú-Washington',
+    ],
+    links: ['Guerra Fría', 'Carrera nuclear', 'Kennedy']
+  },
+  '1962arg': {
+    date: '1962', title: 'Independencia de Argelia',
+    cat: 'fr', catLabel: '🇫🇷 Francia', catColor: '#2D6A4F',
+    context: 'Tras 8 años de guerra y 275.000 muertos, Argelia obtiene su independencia gracias a los Acuerdos de Evian.',
+    points: [
+      '<strong>Acuerdos de Evian</strong> (18 marzo 1962) → cese el fuego y referéndum',
+      'Éxodo de <strong>800.000 Pieds-Noirs</strong> (colonos europeos) hacia Francia',
+      'Masacre de <strong>50.000 harkis</strong> (argelinos pro-franceses) abandonados',
+      'Trauma duradero en la memoria colectiva francesa',
+    ],
+    links: ['V República', 'Descolonización', 'Memoria']
+  },
+  '1964viet': {
+    date: '1964-1973', title: 'Guerra de Vietnam',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'EE.UU. interviene masivamente para defender Vietnam del Sur comunista contra el Norte de Ho Chi Minh.',
+    points: [
+      'EE.UU. envía hasta <strong>500.000 soldados</strong> a Vietnam',
+      'Guerrilla del Viet Cong → EE.UU. no puede ganar la guerra',
+      '<strong>Protestas masivas</strong> en EE.UU. → crisis del modelo americano',
+      'Acuerdos de París (1973) → retirada americana · derrota humillante',
+    ],
+    links: ['Guerra Fría', 'Descolonización', 'No Alineados']
+  },
+  '1968mai': {
+    date: 'Mayo 1968', title: 'Mayo del 68 en Francia',
+    cat: 'fr', catLabel: '🇫🇷 Francia', catColor: '#2D6A4F',
+    context: 'Una crisis estudiantil se convierte en una huelga general que sacude los cimientos de la sociedad francesa.',
+    points: [
+      'Protestas estudiantiles en la Sorbona → 10 millones de huelguistas',
+      '"Prohibido prohibir" → libertad, autonomía, derechos',
+      'Transformación social profunda: papel de la mujer, sexualidad, jerarquías',
+      'De Gaulle se va en <strong>1969</strong> → fin de la era gaullista',
+    ],
+    links: ['De Gaulle', 'Sociedad francesa', 'Baby boom']
+  },
+  '1973petro': {
+    date: '1973', title: 'Crisis del petróleo — fin de los Treinta Gloriosos',
+    cat: 'monde', catLabel: '🌍 Mundo', catColor: '#16A085',
+    context: 'La guerra del Yom Kipur provoca un embargo árabe del petróleo. El precio del barril se cuadruplica. Fin del crecimiento de posguerra.',
+    points: [
+      'Embargo de la <strong>OPEP</strong> → cuadruplicación del precio del petróleo',
+      '<strong>Estanflación</strong>: inflación + desempleo + estancamiento',
+      'Fin de los <strong>Treinta Gloriosos</strong> (1945-1973) en Europa',
+      'Respuesta neoliberal: Thatcher (1979) y Reagan (1980) → privatizaciones',
+    ],
+    links: ['Neoliberalismo', 'Crisis 2008', 'G7']
+  },
+  '1975franco': {
+    date: '20/11/1975', title: 'Muerte de Franco — Transición española',
+    cat: 'es', catLabel: '🇪🇸 España', catColor: '#D4500A',
+    context: 'Tras 36 años de dictadura, Franco muere. España inicia su transición hacia la democracia bajo la dirección de Juan Carlos I.',
+    points: [
+      'Juan Carlos I proclamado rey → sorprende apostando por la democracia',
+      '<strong>Adolfo Suárez</strong> → legalización de partidos y amnistía política',
+      'Primeras elecciones democráticas desde 1936 → junio 1977',
+      'Modelo de Transición admirado internacionalmente',
+    ],
+    links: ['Constitución 1978', '23-F', 'Felipe González']
+  },
+  '1978const': {
+    date: '1978', title: 'Constitución española',
+    cat: 'es', catLabel: '🇪🇸 España', catColor: '#D4500A',
+    context: 'La Constitución de 1978 establece una monarquía parlamentaria y un Estado de las Autonomías. Referéndum: 87,8% de aprobación.',
+    points: [
+      'Monarquía parlamentaria · derechos fundamentales garantizados',
+      'Estado de las <strong>Autonomías</strong> → 17 comunidades autónomas',
+      'Consenso entre todas las fuerzas políticas → "padres de la Constitución"',
+      'Base de la democracia española moderna',
+    ],
+    links: ['Transición', '23-F', 'CEE 1986']
+  },
+  '1979iran': {
+    date: '1979', title: 'Revolución islámica en Irán',
+    cat: 'monde', catLabel: '🌍 Mundo', catColor: '#16A085',
+    context: 'El ayatolá Jomeini derroca al Sha de Irán y proclama la República Islámica. Segundo choque petrolífero.',
+    points: [
+      'Caída del Sha → República Islámica de <strong>Jomeini</strong>',
+      '2ª crisis del petróleo → nuevo aumento de precios',
+      'Invasión soviética de Afganistán (dic. 1979) → nuevo frente Guerra Fría',
+      'Marca el inicio del islamismo político en Oriente Medio',
+    ],
+    links: ['Petróleo', 'Guerra Fría', 'Terrorismo']
+  },
+  '1981mitt': {
+    date: '1981', title: 'Mitterrand — 1er presidente socialista',
+    cat: 'fr', catLabel: '🇫🇷 Francia', catColor: '#2D6A4F',
+    context: 'François Mitterrand gana las elecciones presidenciales, convirtiéndose en el primer presidente socialista de la V República.',
+    points: [
+      'Abolición de la <strong>pena de muerte</strong> (ley Badinter, 1981)',
+      'Semana de 39 horas · 5ª semana de vacaciones pagadas',
+      'Nacionalizaciones → luego marcha atrás (cohabitación 1986)',
+      '<strong>2 mandatos</strong> de 7 años: 1981-1995',
+    ],
+    links: ['V República', 'Cohabitación', 'Maastricht']
+  },
+  '1981tejero': {
+    date: '23/02/1981', title: 'Golpe de Estado de Tejero (23-F)',
+    cat: 'es', catLabel: '🇪🇸 España', catColor: '#D4500A',
+    context: 'El teniente coronel Tejero irrumpe en el Congreso con la Guardia Civil intentando un golpe de Estado. Fracasa gracias a Juan Carlos I.',
+    points: [
+      'Tejero toma el Congreso durante la investidura de Calvo-Sotelo',
+      'Milans del Bosch saca los tanques en Valencia',
+      '<strong>Juan Carlos I</strong> aparece en televisión rechazando el golpe',
+      'Fracaso total → consolida la democracia española',
+    ],
+    links: ['Transición', 'Juan Carlos I', 'PSOE 1982']
+  },
+  '1982psoe': {
+    date: '1982', title: 'Felipe González (PSOE) — democracia consolidada',
+    cat: 'es', catLabel: '🇪🇸 España', catColor: '#D4500A',
+    context: 'El PSOE gana con mayoría absoluta. España entra en una fase de modernización acelerada.',
+    points: [
+      '<strong>4 mandatos</strong> consecutivos: 1982, 1986, 1989, 1993',
+      'OTAN (1982) · CEE (1986) · Modernización del ejército',
+      'Estado del bienestar: sanidad y educación universales',
+      'JJ.OO. Barcelona (1992) · Expo Sevilla → imagen de España moderna',
+    ],
+    links: ['CEE 1986', 'JJ.OO.', 'Transición']
+  },
+  '1986es': {
+    date: '1986', title: 'España y Portugal entran en la CEE',
+    cat: 'eu', catLabel: '🇪🇺 Europa', catColor: '#8E44AD',
+    context: 'España y Portugal se convierten en miembros de la CEE. Para España, supone el pleno regreso a Europa tras décadas de aislamiento franquista.',
+    points: [
+      '3ª ampliación de la CEE → de 10 a 12 miembros',
+      'Integración económica → fondos estructurales para modernización',
+      'Acta Única Europea (1986) → mercado único en 1993',
+      'España adopta el euro en <strong>1999</strong>, desaparece la peseta en 2002',
+    ],
+    links: ['Maastricht', 'España democrática', 'Euro']
+  },
+  '1989mur': {
+    date: '09/11/1989', title: 'Caída del Muro de Berlín',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'La apertura del Muro de Berlín marca el fin del mundo bipolar y de la Guerra Fría. Símbolo del colapso del bloque soviético.',
+    points: [
+      'Tras semanas de manifestaciones masivas en la RDA',
+      'Anuncio accidental en televisión → miles de berlineses derriban el muro',
+      'Reunificación alemana el <strong>3 de octubre de 1990</strong>',
+      'Prelude a la disolución de la URSS (1991)',
+    ],
+    links: ['URSS 1991', 'Reunificación', 'Fin Guerra Fría']
+  },
+  '1991urss': {
+    date: '1991', title: 'Disolución de la URSS — fin de la Guerra Fría',
+    cat: 'gf', catLabel: '🧱 Guerra Fría', catColor: '#2980B9',
+    context: 'El 25 de diciembre de 1991, Gorbachov disuelve oficialmente la URSS. EE.UU. queda como única superpotencia mundial.',
+    points: [
+      '<strong>Glasnost y Perestroika</strong> (Gorbachov) → reformas que aceleran la caída',
+      '15 repúblicas independientes reemplazan la URSS',
+      'EE.UU. → única superpotencia en un mundo unipolar',
+      'Abre la era de la <strong>multipolaridad</strong> emergente (China, etc.)',
+    ],
+    links: ['Post-Guerra Fría', 'Globalización', 'Multipolaridad']
+  },
+  '1992maas': {
+    date: '1992', title: 'Tratado de Maastricht — nacimiento de la UE',
+    cat: 'eu', catLabel: '🇪🇺 Europa', catColor: '#8E44AD',
+    context: 'El Tratado de Maastricht transforma la CEE en la Unión Europea, con ciudadanía europea, moneda única y política exterior común.',
+    points: [
+      'Nacimiento de la <strong>Unión Europea</strong> (1 noviembre 1993)',
+      'Ciudadanía europea · PESC (Política Exterior y de Seguridad Común)',
+      'Convergencia hacia el <strong>euro</strong> → adoptado en 1999',
+      'Espacio Schengen (1995) → libre circulación de personas',
+    ],
+    links: ['Euro', 'Schengen', 'Brexit 2016']
+  },
+  '1992bcn': {
+    date: '1992', title: 'JJ.OO. Barcelona · Expo Sevilla',
+    cat: 'es', catLabel: '🇪🇸 España', catColor: '#D4500A',
+    context: 'España organiza dos eventos mundiales simultáneos que proyectan la imagen de un país moderno y democrático.',
+    points: [
+      'JJ.OO. Barcelona → renovación urbana, proyección internacional',
+      'Expo Sevilla → España como nación moderna e innovadora',
+      'Consolidación de la imagen de la <strong>España democrática</strong>',
+      'Año culminante del gobierno González',
+    ],
+    links: ['Felipe González', 'España moderna', 'CEE']
+  },
+  '2001': {
+    date: '11/09/2001', title: '11-S — "Guerra contra el terrorismo"',
+    cat: 'monde', catLabel: '🌍 Mundo', catColor: '#16A085',
+    context: 'Los atentados de Al Qaeda contra las Torres Gemelas y el Pentágono transforman la geopolítica mundial.',
+    points: [
+      '<strong>2.977 muertos</strong> en los atentados de Nueva York y Washington',
+      'EE.UU. invade Afganistán (2001) e Irak (2003)',
+      'Creación del Departamento de Seguridad Interior · Ley Patriota',
+      'Auge del <strong>islamismo radical</strong> → Daesh (desde 2006)',
+    ],
+    links: ['11-M Madrid', 'Terrorismo', 'Daesh']
+  },
+  '2004': {
+    date: '11/03/2004', title: '11-M Madrid — 193 muertos',
+    cat: 'es', catLabel: '🇪🇸 España', catColor: '#D4500A',
+    context: 'Diez bombas estallan en trenes de cercanías de Madrid. Es el mayor atentado terrorista en la historia de España.',
+    points: [
+      '<strong>193 muertos, 2.000 heridos</strong> en 4 trenes de cercanías',
+      'Atentado islamista (Al Qaeda) → no ETA como afirmó el gobierno',
+      'Gestión del gobierno Aznar → PSOE gana las elecciones 3 días después',
+      'Retirada de las tropas españolas de Irak (Zapatero)',
+    ],
+    links: ['11-S', 'Terrorismo', 'España hoy']
+  },
+  '2008': {
+    date: '2008', title: 'Crisis financiera mundial',
+    cat: 'monde', catLabel: '🌍 Mundo', catColor: '#16A085',
+    context: 'La burbuja inmobiliaria estadounidense estalla, desencadenando la mayor crisis financiera desde 1929.',
+    points: [
+      'Quiebra de <strong>Lehman Brothers</strong> (sept. 2008)',
+      'Productos financieros tóxicos (subprimes) → contagio global',
+      'Desempleo masivo · austeridad en Europa · crisis deuda griega (2010)',
+      'Pone en cuestión la <strong>globalización financiera</strong> desregulada',
+    ],
+    links: ['Globalización', 'Neoliberalismo', 'UE']
+  },
+  '2016brexit': {
+    date: '23/06/2016', title: 'Brexit — Reino Unido sale de la UE',
+    cat: 'eu', catLabel: '🇪🇺 Europa', catColor: '#8E44AD',
+    context: 'El 52% de los británicos votan a favor de salir de la Unión Europea. Mayor crisis en la historia del proyecto europeo.',
+    points: [
+      'Referéndum convocado por Cameron → resultado inesperado',
+      'Refleja la crisis del modelo europeo: desigualdades, inmigración, soberanía',
+      'Proceso de negociación hasta <strong>2020</strong> → salida efectiva',
+      'Advertencia para la UE sobre el <strong>euroescepticismo</strong> creciente',
+    ],
+    links: ['UE', 'Euroescepticismo', 'Maastricht']
+  },
+};
+
+const catColors = {
+  sgm: '#E74C3C', gf: '#2980B9', es: '#D4500A',
+  fr: '#2D6A4F', eu: '#8E44AD', monde: '#16A085'
+};
+const catLabels = {
+  sgm: '⚔️ 2ª Guerra Mundial', gf: '🧱 Guerra Fría',
+  es: '🇪🇸 España', fr: '🇫🇷 Francia',
+  eu: '🇪🇺 Europa', monde: '🌍 Mundo'
+};
+
+let activeEvent = null;
+let activeFilter = 'all';
+
+function showDetail(id) {
+  const data = events[id];
+  if (!data) return;
+
+  // Deactivate previous
+  if (activeEvent) {
+    document.querySelector(`.event[data-id="${activeEvent}"]`)?.classList.remove('active');
+  }
+  activeEvent = id;
+  document.querySelector(`.event[data-id="${id}"]`)?.classList.add('active');
+
+  const col = catColors[data.cat] || '#2D6A4F';
+  const lbl = catLabels[data.cat] || '';
+
+  let bulletsHtml = data.points.map(p =>
+    `<div class="detail-bullet">${p}</div>`
+  ).join('');
+
+  let linksHtml = data.links.map(l =>
+    `<span class="link-tag">${l}</span>`
+  ).join('');
+
+  document.getElementById('emptyState').style.display = 'none';
+  const content = document.getElementById('detailContent');
+  content.className = 'detail-content visible';
+  content.innerHTML = `
+    <div class="detail-header">
+      <div class="detail-date">${data.date}</div>
+      <div class="detail-title">${data.title}</div>
+      <span class="detail-cat" style="background:${col}22;color:${col};border:1px solid ${col}44">${lbl}</span>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">CONTEXTO</div>
+      <div class="detail-text">${data.context}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">PUNTOS CLAVE</div>
+      ${bulletsHtml}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">CONECTAR CON</div>
+      ${linksHtml}
+    </div>
+  `;
+}
+
+function filter(cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-cat="${cat}"]`).classList.add('active');
+
+  document.querySelectorAll('.event').forEach(e => {
+    if (cat === 'all' || e.dataset.cat === cat) {
+      e.classList.remove('hidden');
+    } else {
+      e.classList.add('hidden');
+    }
+  });
+
+  // Hide era labels if all events in that section are hidden
+  document.querySelectorAll('.era-label').forEach(label => {
+    let next = label.nextElementSibling;
+    let hasVisible = false;
+    while (next && !next.classList.contains('era-label')) {
+      if (!next.classList.contains('hidden') && next.classList.contains('event')) {
+        hasVisible = true;
+        break;
+      }
+      next = next.nextElementSibling;
+    }
+    label.style.display = hasVisible ? '' : 'none';
+  });
+
+  // Reset detail panel
+  activeEvent = null;
+  document.getElementById('emptyState').style.display = 'flex';
+  document.getElementById('detailContent').className = 'detail-content';
+}
+</script>
+</body>
+</html>

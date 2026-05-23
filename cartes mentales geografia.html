@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartes Mentales · Geografía Bachibac · @constance.cgh</title>
+<style>
+ @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+ :root {
+ --bg: #FAFAF8;
+ --dark: #1A1A2E;
+ --accent: #2D6A4F;
+ --accent-d: #1B4332;
+ --gold: #C9A84C;
+ --tag: #E8F5E9;
+ --light: #555;
+ --white: #fff;
+ }
+
+ * { box-sizing: border-box; margin: 0; padding: 0; }
+
+ body {
+ font-family: 'Poppins', sans-serif;
+ background: var(--bg);
+ color: var(--dark);
+ min-height: 100vh;
+ }
+
+ header {
+ background: var(--accent-d);
+ padding: 0;
+ position: sticky;
+ top: 0;
+ z-index: 100;
+ border-bottom: 4px solid var(--gold);
+ }
+ .header-inner {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ padding: 10px 24px;
+ }
+ .header-title { color: white; font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+ .header-sub { color: #FCE8DF; font-size: 11px; font-weight: 300; margin-top: 2px; }
+ .header-tag {
+ background: rgba(255,255,255,0.15);
+ color: white; font-size: 10px; font-weight: 600;
+ padding: 4px 12px; border-radius: 20px; letter-spacing: 1px;
+ }
+
+ .nav-fichas {
+ background: var(--accent-d);
+ padding: 0 24px 10px;
+ display: flex; gap: 8px; flex-wrap: wrap;
+ }
+ .nav-btn {
+ background: rgba(255,255,255,0.1);
+ color: #FCE8DF;
+ border: 1px solid rgba(255,255,255,0.2);
+ padding: 5px 14px; border-radius: 20px;
+ font-size: 10px; font-weight: 500;
+ cursor: pointer; transición: all 0.2s;
+ font-family: 'Poppins', sans-serif;
+ }
+ .nav-btn:hover, .nav-btn.active {
+ background: var(--gold); color: var(--accent-d);
+ border-color: var(--gold); font-weight: 700;
+ }
+
+ main { padding: 14px 20px; max-width: 1100px; margin: 0 auto; }
+
+ .ficha-section { display: none; }
+ .ficha-section.active { display: block; }
+
+ .ficha-header {
+ background: var(--accent);
+ border-radius: 10px; padding: 12px 18px;
+ margin-bottom: 8px;
+ display: flex; align-items: center; gap: 10px;
+ }
+ .ficha-num {
+ background: var(--accent-d); color: var(--gold);
+ font-size: 11px; font-weight: 700;
+ padding: 4px 10px; border-radius: 6px;
+ letter-spacing: 1px; white-space: nowrap;
+ }
+ .ficha-header h2 { color: white; font-size: 16px; font-weight: 700; }
+ .ficha-header p { color: #B7DFC9; font-size: 11px; font-weight: 300; margin-top: 2px; }
+
+ .mindmap { display: flex; flex-direction: column; gap: 6px; }
+
+ .central-node {
+ background: var(--accent-d); color: white;
+ border-radius: 12px; padding: 10px 18px;
+ text-align: center; font-size: 15px; font-weight: 700;
+ margin: 0 auto; max-width: 460px; width: 100%;
+ border: 3px solid var(--gold);
+ }
+ .central-node-sub { font-size: 10px; font-weight: 300; color: #B7DFC9; margin-top: 4px; }
+
+ .branches {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+ gap: 6px;
+ }
+
+ .branch {
+ background: white; border-radius: 10px; overflow: hidden;
+ box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+ border-top: 4px solid var(--accent);
+ transición: transform 0.2s, box-shadow 0.2s;
+ }
+ .branch:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+ .branch:nth-child(2) { border-top-color: #40916C; }
+ .branch:nth-child(3) { border-top-color: #52B788; }
+ .branch:nth-child(4) { border-top-color: var(--gold); }
+ .branch:nth-child(5) { border-top-color: #D4500A; }
+ .branch:nth-child(6) { border-top-color: #B22222; }
+
+ .branch-header {
+ background: var(--tag); padding: 5px 8px;
+ font-size: 9px; font-weight: 700; color: var(--accent-d);
+ letter-spacing: 0.5px; text-transform: uppercase;
+ display: flex; align-items: center; gap: 5px;
+ white-space: nowrap; overflow: hidden;
+ }
+ .branch-icon {
+ width: 20px; height: 20px; background: var(--accent);
+ border-radius: 50%; display: flex; align-items: center;
+ justify-content: center; color: white;
+ font-size: 9px; font-weight: 700; flex-shrink: 0;
+ }
+ .branch:nth-child(2) .branch-icon { background: #40916C; }
+ .branch:nth-child(3) .branch-icon { background: #52B788; }
+ .branch:nth-child(4) .branch-icon { background: var(--gold); }
+ .branch:nth-child(5) .branch-icon { background: #D4500A; }
+ .branch:nth-child(6) .branch-icon { background: #B22222; }
+
+ .branch-body { padding: 4px 8px; }
+
+ .leaf {
+ display: flex; align-items: flex-start; gap: 7px;
+ padding: 1px 0; border-bottom: 1px solid #F0F7F4;
+ font-size: 10px; color: var(--light); line-height: 1.35;
+ }
+ .leaf:last-child { border-bottom: none; }
+ .leaf-dot {
+ width: 6px; height: 6px; background: var(--accent);
+ border-radius: 50%; flex-shrink: 0; margin-top: 5px;
+ }
+ .leaf:nth-child(even) .leaf-dot { background: #40916C; }
+ .leaf strong { color: var(--dark); font-weight: 600; }
+
+ .stat-tag {
+ display: inline-block;
+ background: var(--accent-d); color: var(--gold);
+ font-size: 9px; font-weight: 700;
+ padding: 1px 7px; border-radius: 10px;
+ margin-right: 4px; white-space: nowrap;
+ }
+
+ .stat-row {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+ gap: 5px; margin-bottom: 3px;
+ }
+ .stat-box {
+ background: white; border-radius: 8px;
+ border: 1.5px solid #E0D0CC;
+ padding: 7px 6px; text-align: center;
+ }
+ .stat-val { font-size: 13px; font-weight: 700; color: var(--accent); }
+ .stat-lbl { font-size: 8px; color: var(--light); margin-top: 1px; line-height: 1.3; }
+
+ footer {
+ background: var(--accent-d); color: #FCE8DF;
+ font-size: 10px; text-align: center;
+ padding: 12px; margin-top: 24px;
+ border-top: 3px solid var(--gold);
+ }
+</style>
+</head>
+<body>
+
+<header>
+ <div class="header-inner">
+ <div>
+ <div class="header-title">✦ CUADERNO DE FICHAS · GEOGRAFÍA BACHIBAC</div>
+ <div class="header-sub">Cartes mentales · Mares · Globalización · Francia · UE · Territorios</div>
+ </div>
+ <div class="header-tag">TERMINALE BACHIBAC</div>
+ </div>
+ <nav class="nav-fichas">
+ <button class="nav-btn active" onclick="show(1)">1 · Vocabulario</button>
+ <button class="nav-btn" onclick="show(2)">2 · Mares & Océanos</button>
+ <button class="nav-btn" onclick="show(3)">3 · Recursos Marítimos</button>
+ <button class="nav-btn" onclick="show(4)">4 · Francia Marítima</button>
+ <button class="nav-btn" onclick="show(5)">5 · Globalización</button>
+ <button class="nav-btn" onclick="show(6)">6 · Cooperación</button>
+ <button class="nav-btn" onclick="show(7)">7 · Influencia FR</button>
+ <button class="nav-btn" onclick="show(8)">8 · Unión Europea</button>
+ <button class="nav-btn" onclick="show(9)">9 · Regiones FR</button>
+ <button class="nav-btn" onclick="show(10)">10 · Vocabulario UE</button>
+ </nav>
+</header>
+
+<main>
+
+<!-- ══ FICHA 1 ══ -->
+<section class="ficha-section active" id="f1">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 01</div>
+ <div>
+ <h2>VOCABULARIO ESENCIAL DE GEOGRAFÍA</h2>
+ <p>Todos los conceptos que debes dominar para el examen</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 📖 VOCABULARIO ESENCIAL<br>
+ <span class="central-node-sub">Conceptos fundamentales + Conceptos marítimos</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>ESPACIO & TERR.</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Territorio</strong> — porción de espacio ocupada y organizada por grupos humanos</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Periferia</strong> — zona dominada por el centro, del que saca provecho</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Interfaz</strong> — zona de contacto entre dos sistemas territoriales distintos</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Red</strong> — conjunto de líneas que conectan puntos del espacio</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Recomposición</strong> — reordenamiento a largo plazo de un espacio</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>ACTORES & DIN.</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Actor/Agente</strong> — individuo, Estado u organización con acción sobre los territorios</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Globalización</strong> — "proceso de intensificación de los intercambios a escala mundial" (Dollfus)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Metropolización</strong> — concentración de funciones de mando en grandes ciudades</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Litoralización</strong> — concentración de actividades en zonas costeras</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Geopolítica</strong> — rivalidad de poder sobre el territorio entre actores</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>MARÍTIMOS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Maritimización</strong> — dependencia creciente del comercio marítimo</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Chokepoint</strong> — estrecho estratégico indispensable para el comercio</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Puerto hub</strong> — concentra contenedores a nivel mundial (Rotterdam, HK)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Hinterland</strong> — zona interior que se abastece de un puerto</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>ZEE</strong> — 200 millas marítimas de derechos exclusivos de explotación</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>CONVEMAR</strong> — Convención de Montego Bay <span class="stat-tag">1982</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>DEVEL. & FLUJOS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Emergencia</strong> — integración económica de un país con rápido crecimiento</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Flujo</strong> — tránsito de personas, bienes o información entre dos puntos</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Migración</strong> — movimiento de población hacia otro país o región</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Potencia</strong> — "capacidad de imponer su voluntad a otras unidades" (Aron)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Integración</strong> — incorporación tendiendo a la unidad entre elementos</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 2 ══ -->
+<section class="ficha-section" id="f2">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 02</div>
+ <div>
+ <h2>MARES Y OCÉANOS EN LA GLOBALIZACIÓN</h2>
+ <p>Maritimización · Chokepoints · Contenedorización · Puertos</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🌊 MARES & OCÉANOS<br>
+ <span class="central-node-sub">85% del comercio mundial pasa por vía marítima</span>
+ </div>
+ <div class="stat-row">
+ <div class="stat-box"><div class="stat-val">85%</div><div class="stat-lbl">comercio mundial por vía marítima</div></div>
+ <div class="stat-box"><div class="stat-val">10</div><div class="stat-lbl">chokepoints en el mundo</div></div>
+ <div class="stat-box"><div class="stat-val">1950</div><div class="stat-lbl">invention du conteneur</div></div>
+ <div class="stat-box"><div class="stat-val">99%</div><div class="stat-lbl">datos digitales por cables submarinos</div></div>
+ <div class="stat-box"><div class="stat-val">30%</div><div class="stat-lbl">pétrole par Détroit d'Ormuz</div></div>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>MARITIMIZACIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Masificación flujos marítimos · gigantismo naval</div>
+ <div class="leaf"><div class="leaf-dot"></div>Desarrollo portuario · ciudades portuarias</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Ventajas&nbsp;:</strong> volumen, bajo coste, intermodalidad</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Desventajas&nbsp;:</strong> lentitud, contaminación, vulnerabilidad</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>4 CHOKEPOINTS CLAVES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Malaca</strong> — 30% comercio · ruta Asia-Europa · piratería</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Panamá</strong> — 5% tráfico · 40% contenedores EE.UU.</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Ormuz</strong> — 30% petróleo mundial · riesgo iraní</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Suez/Bab el-Mandeb</strong> — 12% tráfico · conflicto Yemen -40%</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>CONTENEDORIZACIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Invención contenedor estandarizado <span class="stat-tag">1950</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>1er buque portacontenedores <span class="stat-tag">1970</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Facilita intermodalidad hinterland/foreland</div>
+ <div class="leaf"><div class="leaf-dot"></div>Tipos&nbsp;: petroleros · graneleros · Ro-Ro · frigoríficos</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>PUERTOS & LIT.</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Tipos&nbsp;: comerciales · industriales · pesqueros · militares</div>
+ <div class="leaf"><div class="leaf-dot"></div>Puertos hub&nbsp;: Rotterdam · Shanghai · Hong Kong</div>
+ <div class="leaf"><div class="leaf-dot"></div>Barcelona&nbsp;: reconversión urbana años 90</div>
+ <div class="leaf"><div class="leaf-dot"></div>Litoralización → ciudades costeras = motores del desarrollo</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 3 ══ -->
+<section class="ficha-section" id="f3">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 03</div>
+ <div>
+ <h2>RECURSOS MARÍTIMOS, APROPIACIÓN Y PROTECCIÓN</h2>
+ <p>CONVEMAR · Territorialización · Contaminación · Biodiversidad</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ ⚓ RECURSOS MARÍTIMOS<br>
+ <span class="central-node-sub">Apropiación · Conflictos · Protección</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>RECURSOS ESEN.</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Hidrocarburos</strong> — 30% producción mundial offshore</div>
+ <div class="leaf"><div class="leaf-dot"></div>Zonas&nbsp;: Golfo Guinea · Golfo México · Mar del Sur de China</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Pesca industrial</strong> — alta mar, buques factoría</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Acuicultura</strong> — Asia (mariscos), Noruega (salmón)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Energías marinas&nbsp;: eólica offshore · mareomotriz · algas</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>DERECHO MAR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Mare liberum</strong> (Grocio) vs <strong>Mare clausum</strong> (Selden)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Truman <span class="stat-tag">1945</span> → jurisdicción plataforma continental</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>CONVEMAR</strong> <span class="stat-tag">1982</span> — 320 artículos, en vigor <span class="stat-tag">1994</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Mar territorial&nbsp;: 12 millas · ZEE&nbsp;: 200 millas</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>CONFLICTOS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Ártico</strong> — 30% gas mundial · deshielo → nuevas rutas</div>
+ <div class="leaf"><div class="leaf-dot"></div>Intereses&nbsp;: Canadá · Dinamarca · Rusia · EE.UU. · China</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Collar de Perlas</strong> — China controla puertos estratégicos</div>
+ <div class="leaf"><div class="leaf-dot"></div>Nueva Ruta de la Seda <span class="stat-tag">2013</span> — Xi Jinping</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>PROT. OCÉANOS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>80% contaminación marina viene de tierra firme</div>
+ <div class="leaf"><div class="leaf-dot"></div>Isla de basura del Pacífico = 2 millones km²</div>
+ <div class="leaf"><div class="leaf-dot"></div>Océanos&nbsp;: regulación clima · absorción CO₂</div>
+ <div class="leaf"><div class="leaf-dot"></div>Gestión global equilibrada = urgencia absoluta</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 4 ══ -->
+<section class="ficha-section" id="f4">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 04</div>
+ <div>
+ <h2>FRANCIA: UNA POTENCIA MARÍTIMA</h2>
+ <p>ZEE · Ultramar · Economía azul · Desafíos geostratégicos</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇫🇷 FRANCIA POTENCIA MARÍTIMA<br>
+ <span class="central-node-sub">2ª ZEE mondiale · présence dans tous les océans</span>
+ </div>
+ <div class="stat-row">
+ <div class="stat-box"><div class="stat-val">20.000 km</div><div class="stat-lbl">de litoral (metrópoli + ultramar)</div></div>
+ <div class="stat-box"><div class="stat-val">11M km²</div><div class="stat-lbl">de ZEE — 2ª mundial</div></div>
+ <div class="stat-box"><div class="stat-val">96%</div><div class="stat-lbl">ZEE proviene del ultramar</div></div>
+ <div class="stat-box"><div class="stat-val">3%</div><div class="stat-lbl">del PIB francés</div></div>
+ <div class="stat-box"><div class="stat-val">500.000</div><div class="stat-lbl">empleos marítimos</div></div>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>DOM. MARÍTIMO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>ZEE = 11M km² → 2ª del mundo tras EE.UU.</div>
+ <div class="leaf"><div class="leaf-dot"></div>EXTRAPLAC <span class="stat-tag">2002</span> → +579.000 km² plataforma</div>
+ <div class="leaf"><div class="leaf-dot"></div>Presencia en todos los océanos gracias al ultramar</div>
+ <div class="leaf"><div class="leaf-dot"></div>CMA-CGM (Marsella) = 4º armador mundial</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>ULTRAMAR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Índico&nbsp;:</strong> Mayotte · Réunion · TAAF</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Pacífico&nbsp;:</strong> Polinesia · Nueva Caledonia</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Atlántico&nbsp;:</strong> Guayana · Antillas · Saint-Pierre</div>
+ <div class="leaf"><div class="leaf-dot"></div>Bases navales&nbsp;: Brest · Toulon · Cherbourg</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>ECON. AZUL</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Pesca · turismo · transporte · energía · marina</div>
+ <div class="leaf"><div class="leaf-dot"></div>3er país pesquero UE — 11% producción europea</div>
+ <div class="leaf"><div class="leaf-dot"></div>Puertos&nbsp;: Le Havre · Marsella · Dunkerque</div>
+ <div class="leaf"><div class="leaf-dot"></div>Le Havre = 12º Europa, 56º mundial → débil</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>DESAFÍOS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Medioambiental&nbsp;:</strong> 4º en arrecifes de coral · responsabilidad</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Geoestratégico&nbsp;:</strong> 6 potencias nucleares navales</div>
+ <div class="leaf"><div class="leaf-dot"></div>Lucha piratería (Índico) · narcotráfico (Caribe)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Desigualdades ultramar-metrópoli → disturbios</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 5 ══ -->
+<section class="ficha-section" id="f5">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 05</div>
+ <div>
+ <h2>DINÁMICAS TERRITORIALES Y GLOBALIZACIÓN</h2>
+ <p>Triada · BRICS · Metropolización · ETN · Actores</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🌐 GLOBALIZACIÓN & TERRITORIES<br>
+ <span class="central-node-sub">Triada · BRICS · Centres & Périphéries</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>LA TRIADA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Amérique du Nord + Europe Occidentale + Asie-Pacifique</div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="stat-tag">80%</span> PIB mondial · <span class="stat-tag">75%</span> comercio mundial</div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="stat-tag">90%</span> transacciones financieras</div>
+ <div class="leaf"><div class="leaf-dot"></div>Centros&nbsp;: Nueva York · Londres · Tokio · Shanghai</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>BRICS & EMERGENTES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Brasil</strong> — recursos naturales, agropoder</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Rusia</strong> — hidrocarburos, potencia militar</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>India</strong> — servicios digitales, demografía</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>China</strong> — "fábrica del mundo", exportaciones</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Sudáfrica</strong> — puerta de acceso a África</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>CENTROS & PERIFERIAS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Metrópolis globales&nbsp;: NY · Londres · París · Tokio</div>
+ <div class="leaf"><div class="leaf-dot"></div>CBD&nbsp;: concentración poder económico en núcleo urbano</div>
+ <div class="leaf"><div class="leaf-dot"></div>PMA&nbsp;: excluidos o marginalizados (Haití, Chad...)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Rust Belt (EE.UU.) · Nord-Pas-de-Calais → declive</div>
+ <div class="leaf"><div class="leaf-dot"></div>Gentrificación&nbsp;: renovación urbana desplaza clases populares</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>ETN & ESTADOS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>ETN</strong> — empresas en varios países, estrategia global</div>
+ <div class="leaf"><div class="leaf-dot"></div>I+D (pays dev.) → producción (émergent) → distribución</div>
+ <div class="leaf"><div class="leaf-dot"></div>IED = motor clave de localización de ETN</div>
+ <div class="leaf"><div class="leaf-dot"></div>Paraísos fiscales&nbsp;: Bahamas · Delaware · Luxemburgo</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 6 ══ -->
+<section class="ficha-section" id="f6">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 06</div>
+ <div>
+ <h2>COOPERACIÓN Y TENSIONES EN LA GLOBALIZACIÓN</h2>
+ <p>FMI · BM · OMC · Regionalización · Altermundismo</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🤝 COOPÉRATION & TENSIONS<br>
+ <span class="central-node-sub">Institutions mondiales · Régionalisation · Résistances</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>INSTITUCIONES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>BM</strong> — Banco Mundial <span class="stat-tag">1945</span> · préstamos a PMA</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>FMI</strong> — Bretton Woods <span class="stat-tag">1944</span> · estabilidad monetaria</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>OMC</strong> — fundada <span class="stat-tag">1994</span> · liberalizar comercio mundial</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>G7/G20</strong> — coordinan políticas económicas globales</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>RÉGIONALISATION</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>UE</strong> — 27 países · eje franco-alemán</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>TLCAN/CUSMA</strong> — EE.UU. · Canadá · México</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Mercosur</strong> — Brasil · Argentina · Uruguay</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>ASEAN</strong> — Sudeste asiático · competencia China/India</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>ACTORES DOM.</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Países desarrollados (G7, G20)</div>
+ <div class="leaf"><div class="leaf-dot"></div>ETN — estrategias globales</div>
+ <div class="leaf"><div class="leaf-dot"></div>Organismos FMI/BM controlados por el Norte</div>
+ <div class="leaf"><div class="leaf-dot"></div>Países Triada dominan el sistema</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>RESISTENCIAS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Altermundismo</strong> — ATTAC <span class="stat-tag">1998</span> · control democrático</div>
+ <div class="leaf"><div class="leaf-dot"></div>Banco Asiático de Inversión en Infraestructura <span class="stat-tag">2014</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Negociaciónes climáticas bloqueadas</div>
+ <div class="leaf"><div class="leaf-dot"></div>Corea del Norte → rechazo total integración global</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 7 ══ -->
+<section class="ficha-section" id="f7">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 07</div>
+ <div>
+ <h2>FRANCIA: INFLUENCIA INTERNACIONAL</h2>
+ <p>Soft power · Francofonía · Economía · Atractivo territorial</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇫🇷 RAYONNEMENT FRANÇAIS<br>
+ <span class="central-node-sub">Puissance politique · Soft power · Économie</span>
+ </div>
+ <div class="stat-row">
+ <div class="stat-box"><div class="stat-val">1er</div><div class="stat-lbl">destino turístico mundial (90M/año)</div></div>
+ <div class="stat-box"><div class="stat-val">7ª</div><div class="stat-lbl">economía mundial (PIB)</div></div>
+ <div class="stat-box"><div class="stat-val">3ª</div><div class="stat-lbl">red diplomática del mundo</div></div>
+ <div class="stat-box"><div class="stat-val">300M</div><div class="stat-lbl">francófonos en el mundo</div></div>
+ <div class="stat-box"><div class="stat-val">45%</div><div class="stat-lbl">CAC 40 en manos extranjeras</div></div>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>POTENCIA POLÍTICA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>3ª red diplomática · miembro permanente ONU</div>
+ <div class="leaf"><div class="leaf-dot"></div>6º contribuyente presupuesto ONU</div>
+ <div class="leaf"><div class="leaf-dot"></div>Disuasión nuclear · bases en el extranjero</div>
+ <div class="leaf"><div class="leaf-dot"></div>5º donante mundial de ayuda al desarrollo <span class="stat-tag">2018</span></div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>SOFT POWER</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Valores universales&nbsp;: DDHH <span class="stat-tag">1789</span>, <span class="stat-tag">1948</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>ONG&nbsp;: Médicos Sin Fronteras</div>
+ <div class="leaf"><div class="leaf-dot"></div>Louvre Abu Dhabi · universidades · institutos</div>
+ <div class="leaf"><div class="leaf-dot"></div>TV5Monde · France 24 · RFI</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>FRANCOFONÍA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>300 millones de francófonos — 5ª lengua mundial</div>
+ <div class="leaf"><div class="leaf-dot"></div>OIF&nbsp;: 88 Estados miembros</div>
+ <div class="leaf"><div class="leaf-dot"></div>96 institutos franceses · cientos de escuelas</div>
+ <div class="leaf"><div class="leaf-dot"></div>Instrumento de influencia diplomática clave</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>ECONOMÍA & ATRACTIVO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>LVMH · Total · Veolia · L'Oréal · Vinci · Kering</div>
+ <div class="leaf"><div class="leaf-dot"></div>Sedes&nbsp;: UNESCO · OCDE · Interpol · PE</div>
+ <div class="leaf"><div class="leaf-dot"></div>COP21 · JO 2024 · Euro 2016</div>
+ <div class="leaf"><div class="leaf-dot"></div>Déficit comercial&nbsp;: -60.000M EUR <span class="stat-tag">2018</span></div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 8 ══ -->
+<section class="ficha-section" id="f8">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 08</div>
+ <div>
+ <h2>LA UNIÓN EUROPEA</h2>
+ <p>Mercado interior · Cohesión territorial · PAC · Desigualdades</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇪🇺 LA UNIÓN EUROPEA<br>
+ <span class="central-node-sub">Centre économique mondial · Espace fragmenté</span>
+ </div>
+ <div class="stat-row">
+ <div class="stat-box"><div class="stat-val">27</div><div class="stat-lbl">Estados miembros</div></div>
+ <div class="stat-box"><div class="stat-val">30%</div><div class="stat-lbl">del PIB mundial</div></div>
+ <div class="stat-box"><div class="stat-val">40%</div><div class="stat-lbl">del comercio mundial</div></div>
+ <div class="stat-box"><div class="stat-val">500M</div><div class="stat-lbl">de habitantes</div></div>
+ <div class="stat-box"><div class="stat-val">392Bn€</div><div class="stat-lbl">fondos cohesión 2021-2027</div></div>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>POT. COMERCIAL</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>30% PIB · 4 países en top 10 mundial</div>
+ <div class="leaf"><div class="leaf-dot"></div>25% producción agrícola mundial</div>
+ <div class="leaf"><div class="leaf-dot"></div>Shell · Airbus · Volkswagen · Total</div>
+ <div class="leaf"><div class="leaf-dot"></div>36% IED mundial · euro compite con el dólar</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>CENTRO & PERIFERIA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Centro&nbsp;:</strong> megalópolis eje Londres-Milán</div>
+ <div class="leaf"><div class="leaf-dot"></div>Rotterdam · Heathrow · CDG · eje franco-alemán</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Periferias&nbsp;:</strong> Europa del Este · regiones ultraperiféricas</div>
+ <div class="leaf"><div class="leaf-dot"></div>Sur&nbsp;: migración · crisis económica · dumping social</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>COHESIÓN & PAC</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>FEDER · FSE+ · Fondo de Cohesión · Interreg</div>
+ <div class="leaf"><div class="leaf-dot"></div>PAC&nbsp;: apoyo agricultores, seguridad alimentaria</div>
+ <div class="leaf"><div class="leaf-dot"></div>Schengen&nbsp;: libre circulación · RTE-T&nbsp;: transportes</div>
+ <div class="leaf"><div class="leaf-dot"></div>Reforma PAC → agricultura más sostenible</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>GRUPOS DE PAÍSES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Seis fundadores</strong> — FR · DE · IT · BE · NL · LU</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Siete prósperos</strong> — contribuyentes netos</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Siete del Sur</strong> — receptores de fondos</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Visegrado</strong> — PL · HU · CZ · SK → euroescepticismo</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 9 ══ -->
+<section class="ficha-section" id="f9">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 09</div>
+ <div>
+ <h2>FRANCIA Y SUS REGIONES EN LA UE</h2>
+ <p>Metropolización · Descentralización · Desigualdades · Mayotte</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🗺️ TERRITOIRE FRANÇAIS<br>
+ <span class="central-node-sub">Centralisation → Recomposition · Métropolisation</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>MACROCEFALIA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>París = 31% del PIB nacional</div>
+ <div class="leaf"><div class="leaf-dot"></div>"París y el desierto francés" (Gravier, <span class="stat-tag">1947</span>)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Conectada a la "Banana azul" (eje Londres-Milán)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Diagonal del vacío&nbsp;: Ardenas → suroeste</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>DESCENTRAL.</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Iniciada bajo Mitterrand <span class="stat-tag">1982-83</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Reforma NOTRe <span class="stat-tag">2015</span> → 13 regiones metropolitanas</div>
+ <div class="leaf"><div class="leaf-dot"></div>Communes · départements · régions como actores</div>
+ <div class="leaf"><div class="leaf-dot"></div>Heliotropismo → atracción por el sur (Niza, Toulouse)</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>METRÓPOLIS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Toulouse (aeronáutica) · Lyon (biotecnología)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Bordeaux (turismo) · Montpellier · Niza</div>
+ <div class="leaf"><div class="leaf-dot"></div>Sophia-Antipolis <span class="stat-tag">1974</span> → tecnópolis pionera</div>
+ <div class="leaf"><div class="leaf-dot"></div>80% desplazamientos son regionales</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>MAYOTTE & LEUCATE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Mayotte</strong> — departamento ultramar desde <span class="stat-tag">2011</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>75% por debajo umbral pobreza · presión migratoria</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Port Leucate</strong> — creada <span class="stat-tag">1968</span> (Misión Racine)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Modelo planificación estatal litoral Languedoc</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 10 ══ -->
+<section class="ficha-section" id="f10">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 10</div>
+ <div>
+ <h2>VOCABULARIO UE Y TERRITORIO FRANCÉS</h2>
+ <p>Definiciónes instituciónales · Conceptos geográficos esenciales</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 📖 VOCABULARIO UE & TERRITOIRE FR<br>
+ <span class="central-node-sub">Institutions · Géographie · Concepts essentiels</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>INSTITUCIONES UE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>FEDER</strong> — infraestructuras y proyectos regionales</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>FSE+</strong> — empleo, formación, inclusión social</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>PAC</strong> — apoyo agricultores, seguridad alimentaria</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>RUP</strong> — Regiones Ultraperiféricas (Guadalupe, Guayana...)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Interreg</strong> — cooperación transfronteriza</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>RTE-T</strong> — Red Transeuropea de Transporte</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>CONCEPTOS UE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Megalópolis europea</strong> — eje Londres-Milán</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Eje franco-alemán</strong> — motor político UE</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Europa fortaleza</strong> — restricción acceso migrantes</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Dumping social</strong> — competencia desleal laboral</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Mercado interior</strong> — libre circulación bienes/personas</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>GÉO. FRANCE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Macrocefalia urbana</strong> — concentración excesiva en París</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Diagonal del vacío</strong> — baja densidad noreste → suroeste</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Banana azul</strong> — eje económico Londres-Milán</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Heliotropismo</strong> — atracción por el sur soleado</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Tecnópolis</strong> — parque científico e innovador</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CONCEPTOS GLOBALES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Soft power</strong> — influencia por cultura y valores</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Francofonía</strong> — 300M hablantes · proyecto político</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Atractivo territorial</strong> — capacidad de atraer inversiónes</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Ley NOTRe 2015</strong> — 13 regiones metropolitanas</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Misión Racine</strong> — tourisme litoral Languedoc años 60</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+</main>
+
+<footer>
+ BACHIBAC · GEOGRAFÍA · CARTES MENTALES &nbsp;·&nbsp; © Constance | @constance.cgh &nbsp;·&nbsp; Retrouve toutes mes fiches sur mes réseaux
+</footer>
+
+<script>
+function show(n) {
+ document.querySelectorAll('.ficha-section').forEach(s => s.classList.remove('active'));
+ document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+ document.getElementById('f' + n).classList.add('active');
+ document.querySelectorAll('.nav-btn')[n-1].classList.add('active');
+ window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

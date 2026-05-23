@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartes Mentales · Literatura Bachibac · @constance.cgh</title>
+<style>
+ @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+ :root {
+ --bg: #FAFAF8;
+ --dark: #1A1A2E;
+ --accent: #B22222;
+ --accent-d: #7B1111;
+ --gold: #D4500A;
+ --tag: #FBF0EC;
+ --light: #555;
+ --white: #fff;
+ }
+
+ * { box-sizing: border-box; margin: 0; padding: 0; }
+
+ body {
+ font-family: 'Poppins', sans-serif;
+ background: var(--bg);
+ color: var(--dark);
+ min-height: 100vh;
+ }
+
+ header {
+ background: var(--accent-d);
+ position: sticky; top: 0; z-index: 100;
+ border-bottom: 4px solid var(--gold);
+ }
+ .header-inner {
+ display: flex; align-items: center; justify-content: space-between;
+ padding: 10px 24px;
+ }
+ .header-title { color: white; font-size: 13px; font-weight: 600; letter-spacing: 1px; }
+ .header-sub { color: #FCE8DF; font-size: 11px; font-weight: 300; margin-top: 2px; }
+ .header-tag {
+ background: rgba(255,255,255,0.15); color: white;
+ font-size: 10px; font-weight: 600;
+ padding: 4px 12px; border-radius: 20px; letter-spacing: 1px;
+ }
+
+ .nav-fichas {
+ background: var(--accent-d);
+ padding: 0 24px 10px;
+ display: flex; gap: 6px; flex-wrap: wrap;
+ }
+ .nav-btn {
+ background: rgba(255,255,255,0.1); color: #FCE8DF;
+ border: 1px solid rgba(255,255,255,0.2);
+ padding: 4px 12px; border-radius: 20px;
+ font-size: 10px; font-weight: 500;
+ cursor: pointer; transition: all 0.2s;
+ font-family: 'Poppins', sans-serif;
+ white-space: nowrap;
+ }
+ .nav-btn:hover, .nav-btn.active {
+ background: var(--gold); color: var(--accent-d);
+ border-color: var(--gold); font-weight: 700;
+ }
+
+ main { padding: 14px 20px; max-width: 1100px; margin: 0 auto; }
+
+ .ficha-section { display: none; }
+ .ficha-section.active { display: block; }
+
+ .ficha-header {
+ background: var(--accent); border-radius: 10px;
+ padding: 12px 18px; margin-bottom: 8px;
+ display: flex; align-items: center; gap: 10px;
+ }
+ .ficha-num {
+ background: var(--accent-d); color: #FCE8DF;
+ font-size: 10px; font-weight: 700;
+ padding: 3px 9px; border-radius: 6px;
+ letter-spacing: 1px; white-space: nowrap;
+ }
+ .ficha-header h2 { color: white; font-size: 15px; font-weight: 700; }
+ .ficha-header p { color: #FCE8DF; font-size: 10px; font-weight: 300; margin-top: 2px; }
+
+ .mindmap { display: flex; flex-direction: column; gap: 6px; }
+
+ .central-node {
+ background: var(--accent-d); color: white;
+ border-radius: 10px; padding: 10px 18px;
+ text-align: center; font-size: 14px; font-weight: 700;
+ margin: 0 auto; max-width: 460px; width: 100%;
+ border: 3px solid var(--gold);
+ }
+ .central-node-sub { font-size: 10px; font-weight: 300; color: #FCE8DF; margin-top: 3px; }
+
+ .branches {
+ display: grid;
+ grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+ gap: 6px;
+ }
+
+ .branch {
+ background: white; border-radius: 8px; overflow: hidden;
+ box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+ border-top: 4px solid var(--accent);
+ transition: transform 0.2s, box-shadow 0.2s;
+ }
+ .branch:hover { transform: translateY(-2px); box-shadow: 0 5px 16px rgba(0,0,0,0.1); }
+ .branch:nth-child(2) { border-top-color: #922B21; }
+ .branch:nth-child(3) { border-top-color: #C0392B; }
+ .branch:nth-child(4) { border-top-color: #E67E22; }
+ .branch:nth-child(5) { border-top-color: #922B21; }
+ .branch:nth-child(6) { border-top-color: #784212; }
+
+ .branch-header {
+ background: var(--tag); padding: 5px 8px;
+ font-size: 9px; font-weight: 700; color: var(--accent-d);
+ letter-spacing: 0.5px; text-transform: uppercase;
+ display: flex; align-items: center; gap: 5px;
+ white-space: nowrap; overflow: hidden;
+ }
+ .branch-icon {
+ width: 18px; height: 18px; background: var(--accent);
+ border-radius: 50%; display: flex; align-items: center;
+ justify-content: center; color: white;
+ font-size: 8px; font-weight: 700; flex-shrink: 0;
+ }
+ .branch:nth-child(2) .branch-icon { background: #D4500A; }
+ .branch:nth-child(3) .branch-icon { background: #C0392B; }
+ .branch:nth-child(4) .branch-icon { background: var(--gold); }
+ .branch:nth-child(5) .branch-icon { background: #D4500A; }
+ .branch:nth-child(6) .branch-icon { background: #B22222; }
+
+ .branch-body { padding: 4px 8px; }
+
+ .leaf {
+ display: flex; align-items: flex-start; gap: 6px;
+ padding: 2px 0; border-bottom: 1px solid #FEF6F3;
+ font-size: 10px; color: var(--light); line-height: 1.35;
+ }
+ .leaf:last-child { border-bottom: none; }
+ .leaf-dot {
+ width: 5px; height: 5px; background: var(--accent);
+ border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+ }
+ .leaf:nth-child(even) .leaf-dot { background: #D4500A; }
+ .leaf strong { color: var(--dark); font-weight: 600; }
+
+ .date-tag {
+ display: inline-block;
+ background: var(--accent-d); color: #FCE8DF;
+ font-size: 8.5px; font-weight: 700;
+ padding: 1px 6px; border-radius: 8px;
+ margin-right: 3px; white-space: nowrap;
+ }
+
+ footer {
+ background: var(--accent-d); color: #FCE8DF;
+ font-size: 10px; text-align: center;
+ padding: 12px; margin-top: 16px;
+ border-top: 3px solid var(--gold);
+ }
+</style>
+</head>
+<body>
+
+<header>
+ <div class="header-inner">
+ <div>
+ <div class="header-title">✦ CUADERNO DE FICHAS · LITERATURA BACHIBAC</div>
+ <div class="header-sub">Cartes mentales · Autores · Movimientos · Análisis · Método</div>
+ </div>
+ <div class="header-tag">TERMINALE BACHIBAC</div>
+ </div>
+ <nav class="nav-fichas">
+ <button class="nav-btn active" onclick="show(1)">1 · Movimientos</button>
+ <button class="nav-btn" onclick="show(2)">2 · Autores ES</button>
+ <button class="nav-btn" onclick="show(3)">3 · Autores FR</button>
+ <button class="nav-btn" onclick="show(4)">4 · La Novela</button>
+ <button class="nav-btn" onclick="show(5)">5 · La Poesía</button>
+ <button class="nav-btn" onclick="show(6)">6 · El Teatro</button>
+ <button class="nav-btn" onclick="show(7)">7 · Memoria Histórica</button>
+ <button class="nav-btn" onclick="show(8)">8 · Figuras Retóricas</button>
+ <button class="nav-btn" onclick="show(9)">9 · Comentario</button>
+ <button class="nav-btn" onclick="show(10)">10 · Frases Oral</button>
+ <button class="nav-btn" onclick="show(11)">11 · Siglo de Oro</button>
+ <button class="nav-btn" onclick="show(12)">12 · Autores Adicionales</button>
+ </nav>
+</header>
+
+<main>
+
+<!-- ══ FICHA 1 ══ -->
+<section class="ficha-section active" id="f1">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 01</div>
+ <div>
+ <h2>MOVIMIENTOS LITERARIOS</h2>
+ <p>Del Romanticismo al Nouveau Roman · España y Francia</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 📚 MOVIMIENTOS LITERARIOS<br>
+ <span class="central-node-sub">Siglos XIX–XX · España y Francia</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>ROMANTICISMO & REALISMO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Romanticismo</strong> <span class="date-tag">1820-1850</span> — yo, héroe maldito, amor imposible, muerte</div>
+ <div class="leaf"><div class="leaf-dot"></div>FR&nbsp;: Hugo, Lamartine · ES&nbsp;: Espronceda, Bécquer</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Realismo</strong> <span class="date-tag">1850-1900</span> — descripción objetiva, crítica social</div>
+ <div class="leaf"><div class="leaf-dot"></div>FR&nbsp;: Flaubert, Zola · ES&nbsp;: Galdós, Clarín</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>MODERNISMO & GEN. 98</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Modernismo</strong> <span class="date-tag">1880-1920</span> — musicalidad, esteticismo, verso libre</div>
+ <div class="leaf"><div class="leaf-dot"></div>Verlaine, Mallarmé · Rubén Darío, Machado</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Gen. del 98</strong> — angustia existencial, paisaje castellano</div>
+ <div class="leaf"><div class="leaf-dot"></div>Unamuno, Azorín, Baroja, Valle-Inclán</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>VANGUARDIAS & GEN. 27</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Vanguardias</strong> <span class="date-tag">1910-1940</span> — ruptura total, surrealismo, dadaísmo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Breton, Apollinaire · Lorca, Alberti</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Gen. del 27</strong> — vanguardia + tradición clásica, duende</div>
+ <div class="leaf"><div class="leaf-dot"></div>Lorca, Alberti, Cernuda, Salinas, Guillén</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>EXISTENCIALISMO & NOUVEAU ROMAN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Existencialismo</strong> <span class="date-tag">1939-1960</span> — absurdo, libertad radical</div>
+ <div class="leaf"><div class="leaf-dot"></div>Sartre, Camus, Simone de Beauvoir</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Nouveau Roman</strong> <span class="date-tag">1950-1970</span> — sin trama, experimentación formal</div>
+ <div class="leaf"><div class="leaf-dot"></div>Robbe-Grillet, Duras, Simon, Butor</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 2 ══ -->
+<section class="ficha-section" id="f2">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 02</div>
+ <div>
+ <h2>AUTORES ESPAÑOLES ESENCIALES</h2>
+ <p>Del Romanticismo a la literatura contemporánea</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇪🇸 AUTORES ESPAÑOLES<br>
+ <span class="central-node-sub">Del Romanticismo tardío a la posguerra</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>BÉCQUER & UNAMUNO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Bécquer</strong> <span class="date-tag">1836-1870</span> — Rimas y Leyendas</div>
+ <div class="leaf"><div class="leaf-dot"></div>Romanticismo tardío · amor imposible · melancolía</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Unamuno</strong> <span class="date-tag">1864-1936</span> — Niebla, San Manuel Bueno</div>
+ <div class="leaf"><div class="leaf-dot"></div>Gen. del 98 · metaficción · angustia existencial</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>MACHADO & VALLE-INCLÁN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Machado</strong> <span class="date-tag">1875-1939</span> — Soledades, Campos de Castilla</div>
+ <div class="leaf"><div class="leaf-dot"></div>Tiempo y memoria · paisaje castellano · soledad</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Valle-Inclán</strong> <span class="date-tag">1866-1936</span> — Luces de bohemia</div>
+ <div class="leaf"><div class="leaf-dot"></div>Esperpento · deformación grotesca · crítica social</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>LORCA & ALBERTI</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Lorca</strong> <span class="date-tag">1898-1936</span> — Romancero gitano, Bodas de sangre</div>
+ <div class="leaf"><div class="leaf-dot"></div>Duende · muerte · libertad · surrealismo popular</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Alberti</strong> <span class="date-tag">1902-1999</span> — Marinero en tierra</div>
+ <div class="leaf"><div class="leaf-dot"></div>Exilio republicano · nostalgia · compromiso político</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CELA & LAFORET</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Cela</strong> <span class="date-tag">1916-2002</span> — La familia de Pascual Duarte, La colmena</div>
+ <div class="leaf"><div class="leaf-dot"></div>Tremendismo · violencia · posguerra · Nobel <span class="date-tag">1989</span></div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Laforet</strong> <span class="date-tag">1921-2004</span> — Nada</div>
+ <div class="leaf"><div class="leaf-dot"></div>Existencialismo español · posguerra · Premio Nadal <span class="date-tag">1944</span></div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 3 ══ -->
+<section class="ficha-section" id="f3">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 03</div>
+ <div>
+ <h2>AUTORES FRANCESES ESENCIALES</h2>
+ <p>De la Ilustración al Nouveau Roman · Obras del programa</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🇫🇷 AUTORES FRANCESES<br>
+ <span class="central-node-sub">De Voltaire a Camus · siglos XVIII–XX</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>VOLTAIRE & HUGO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Voltaire</strong> <span class="date-tag">1694-1778</span> — Candide, Zadig</div>
+ <div class="leaf"><div class="leaf-dot"></div>Ilustración · ironía · crítica a la Iglesia · cuento filosófico</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Hugo</strong> <span class="date-tag">1802-1885</span> — Les Misérables, Notre-Dame</div>
+ <div class="leaf"><div class="leaf-dot"></div>Romanticismo social · justicia · redención · pueblo</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>FLAUBERT & ZOLA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Flaubert</strong> <span class="date-tag">1821-1880</span> — Madame Bovary</div>
+ <div class="leaf"><div class="leaf-dot"></div>Realismo · bovarismo · estilo indirecto libre · "mot juste"</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Zola</strong> <span class="date-tag">1840-1902</span> — Germinal, L'Assommoir</div>
+ <div class="leaf"><div class="leaf-dot"></div>Naturalismo · determinismo · lucha de clases · J'accuse!</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>BAUDELAIRE & SARTRE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Baudelaire</strong> <span class="date-tag">1821-1867</span> — Les Fleurs du mal</div>
+ <div class="leaf"><div class="leaf-dot"></div>Simbolismo · spleen · correspondencias sensoriales</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Sartre</strong> <span class="date-tag">1905-1980</span> — La Nausée, Huis clos</div>
+ <div class="leaf"><div class="leaf-dot"></div>Existencialismo · libertad radical · compromiso político</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CAMUS & BALZAC</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Camus</strong> <span class="date-tag">1913-1960</span> — L'Étranger, La Peste · Nobel <span class="date-tag">1957</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Absurdo · indiferencia · "hay que imaginar a Sísifo feliz"</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Balzac</strong> <span class="date-tag">1799-1850</span> — Le Père Goriot, Comédie humaine</div>
+ <div class="leaf"><div class="leaf-dot"></div>Realismo · ambición · dinero · retrato total de la sociedad</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 4 ══ -->
+<section class="ficha-section" id="f4">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 04</div>
+ <div>
+ <h2>LA NOVELA — ANÁLISIS Y TÉCNICAS</h2>
+ <p>Narrador · Tiempo · Subgéneros · Recursos narrativos</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 📖 LA NOVELA<br>
+ <span class="central-node-sub">Tipos de narrador · Tiempo narrativo · Subgéneros</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>TIPOS DE NARRADOR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Omnisciente</strong> — sabe todo, acceso a pensamientos de todos</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>1ª persona</strong> — subjetivo, protagonista o testigo</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>3ª persona</strong> — distancia objetiva, narrador-cámara</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Estilo indirecto libre</strong> — mezcla voz narrador/personaje (Flaubert)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Narrador no fiable</strong> — visión parcial o engañosa (Cela)</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>TIEMPO NARRATIVO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Analepsis</strong> — flashback, retroceso al pasado</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Prolepsis</strong> — flashforward, anticipación del futuro</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>In medias res</strong> — inicio en el centro de la acción</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Elipsis</strong> — salto temporal, aceleración del ritmo</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Escena</strong> — tiempo historia = tiempo relato</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>SUBGÉNEROS</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Bildungsroman</strong> — evolución del protagonista desde la juventud</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Novela social</strong> — denuncia condiciones populares, España años 50-60</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Picaresca</strong> — pícaro, autobiografía, ascenso social fallido</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Tremendismo</strong> — violencia y crudeza, España posguerra</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Novela histórica</strong> — pasado reconstruido con personajes ficticios</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CONCEPTOS CLAVE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Bovarismo</strong> — confusión entre ficción y realidad (Flaubert)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Monólogo interior</strong> — flujo de conciencia sin orden lógico</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Intertextualidad</strong> — referencia a otra obra literaria</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Leitmotiv</strong> — motivo temático que se repite</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Cronotopo</strong> — unión significativa de espacio y tiempo (Bajtín)</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 5 ══ -->
+<section class="ficha-section" id="f5">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 05</div>
+ <div>
+ <h2>LA POESÍA — ANÁLISIS Y COMENTARIO</h2>
+ <p>Métrica · Rima · Figuras · Cómo comentar un poema</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🎭 LA POESÍA<br>
+ <span class="central-node-sub">Métrica · Rima · Figuras retóricas esenciales</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>MÉTRICA & VERSIFICACIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Endecasílabo</strong> (11) — el más usado, soneto, lira</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Alejandrino</strong> (14) — 7+7, modernismo, Rubén Darío</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Octosílabo</strong> (8) — romance popular, Lorca</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Verso libre</strong> — sin métrica fija, vanguardias</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Sinalefa</strong> — vocal final + vocal inicial = 1 sílaba</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>RIMA & RITMO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Rima consonante</strong> — coinciden vocales Y consonantes</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Rima asonante</strong> — solo vocales coinciden, romance español</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Encabalgamiento</strong> — frase continúa al verso siguiente</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Anáfora</strong> — repetición al inicio de versos, énfasis</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>FIGURAS ESENCIALES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Metáfora</strong> — identificación directa sin "como"</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Símil</strong> — comparación con "como", "cual"</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Hipérbole</strong> — exageración expresiva</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Ironía</strong> — decir lo contrario de lo que se piensa</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Sinestesia</strong> — mezcla de sensaciones distintas, modernismo</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Aliteración</strong> — repetición de sonidos consonánticos</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CÓMO COMENTAR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Identificar&nbsp;: autor, movimiento, tipo de poema</div>
+ <div class="leaf"><div class="leaf-dot"></div>Métrica y rima → efecto musical o ruptura</div>
+ <div class="leaf"><div class="leaf-dot"></div>Campo léxico dominante → tema central</div>
+ <div class="leaf"><div class="leaf-dot"></div>Figuras retóricas + su efecto expresivo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Relación con el contexto histórico del autor</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 6 ══ -->
+<section class="ficha-section" id="f6">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 06</div>
+ <div>
+ <h2>EL TEATRO ESPAÑOL Y FRANCÉS</h2>
+ <p>Géneros · Obras clave · Teatro del absurdo · Análisis</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🎭 EL TEATRO<br>
+ <span class="central-node-sub">España y Francia · Clásico · Contemporáneo · Absurdo</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>LORCA & BUERO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Lorca</strong> — Bodas de sangre, La casa de Bernarda Alba</div>
+ <div class="leaf"><div class="leaf-dot"></div>Represión sexual · honor · espacio cerrado = opresión</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Buero Vallejo</strong> — Historia de una escalera</div>
+ <div class="leaf"><div class="leaf-dot"></div>Posguerra · frustración · sueños rotos · realismo crítico</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>CALDERÓN & MOLIÈRE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Calderón</strong> — La vida es sueño, El gran teatro del mundo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Barroco · realidad vs sueño · honor · auto sacramental</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Molière</strong> — Le Misanthrope, Le Malade imaginaire</div>
+ <div class="leaf"><div class="leaf-dot"></div>Comedia clásica · hipocresía burguesa · sátira social</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>TEATRO DEL ABSURDO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Beckett</strong> — En attendant Godot, Fin de partie</div>
+ <div class="leaf"><div class="leaf-dot"></div>Espera infinita · sin sentido · lenguaje circular</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Sartre</strong> — Huis clos · "el infierno son los demás"</div>
+ <div class="leaf"><div class="leaf-dot"></div>Existencialismo · libertad · sin salida posible</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>ANOUILH & CLAVES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Anouilh</strong> — Antigone · resistencia vs poder</div>
+ <div class="leaf"><div class="leaf-dot"></div>Lectura de la ocupación nazi · dilema moral absoluto</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Catarsis</strong> — purificación emocional por la tragedia (Aristóteles)</div>
+ <div class="leaf"><div class="leaf-dot"></div>Tragedia · comedia · trágicomedia · auto sacramental</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 7 ══ -->
+<section class="ficha-section" id="f7">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 07</div>
+ <div>
+ <h2>LA MEMORIA HISTÓRICA EN LA LITERATURA</h2>
+ <p>Guerra Civil · Franquismo · Exilio · Transición · Deber de memoria</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🕊️ MEMORIA HISTÓRICA<br>
+ <span class="central-node-sub">Guerra Civil <span class="date-tag">1936</span> → Franquismo → Transición <span class="date-tag">1975</span></span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>EXILIO REPUBLICANO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Alberti</strong> — Retornos de lo vivo lejano · desde Buenos Aires</div>
+ <div class="leaf"><div class="leaf-dot"></div>Nostalgia de España · esperanza y pérdida</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>León Felipe</strong> — desde México · voz de los vencidos</div>
+ <div class="leaf"><div class="leaf-dot"></div>Denuncia del franquismo · tono profético y épico</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>CERNUDA & POSGUERRA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Cernuda</strong> — La realidad y el deseo · exilio en México</div>
+ <div class="leaf"><div class="leaf-dot"></div>Deseo vs realidad · melancolía · honestidad total</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Cela</strong> — La colmena · retrato colectivo Madrid</div>
+ <div class="leaf"><div class="leaf-dot"></div>Tremendismo · violencia · censura franquista</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>MEMORIA CONTEMPORÁNEA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Javier Cercas</strong> — Soldados de Salamina</div>
+ <div class="leaf"><div class="leaf-dot"></div>Ficción + historia real · deber de memoria</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Almudena Grandes</strong> — Episodios de una guerra interminable</div>
+ <div class="leaf"><div class="leaf-dot"></div>Resistencia antifranquista · homenaje a los vencidos</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CRONOLOGÍA CLAVE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1936</span> Inicio Guerra Civil</div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1939</span> Victoria Franco · exilio republicano</div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">1939-1975</span> Franquismo · censura · represión</div>
+ <div class="leaf"><div class="leaf-dot"></div><span class="date-tag">2007</span> Ley de Memoria Histórica</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 8 ══ -->
+<section class="ficha-section" id="f8">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 08</div>
+ <div>
+ <h2>FIGURAS RETÓRICAS — GUÍA COMPLETA</h2>
+ <p>Definición · Ejemplo · Efecto · Uso en el comentario</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ ✍️ FIGURAS RETÓRICAS<br>
+ <span class="central-node-sub">Las 12 figuras esenciales para el examen</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>IMÁGENES & COMPARACIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Metáfora</strong> — "Sus ojos son luceros" · identificación sin "como"</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Símil</strong> — "Corre como el viento" · comparación explícita</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Personificación</strong> — "El viento gime" · cualidades humanas a lo inanimado</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Sinestesia</strong> — "Oí el color de tu voz" · mezcla de sentidos</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>ÉNFASIS & RITMO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Hipérbole</strong> — "Te lo he dicho mil veces" · exageración énfatica</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Anáfora</strong> — "Hoy… Hoy… Hoy…" · repetición inicial, ritmo</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Aliteración</strong> — repetición de sonidos consonánticos, musicalidad</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Encabalgamiento</strong> — frase continúa al verso siguiente, tensión</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>OPOSICIÓN & JUEGO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Antítesis</strong> — "Tan corto el amor, tan largo el olvido" (Neruda)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Oxímoron</strong> — "Es hielo abrasador" (Quevedo) · contrarios unidos</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Ironía</strong> — decir lo contrario, distancia crítica, denuncia</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Quiasmo</strong> — inversión simétrica del orden de elementos</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>USAR EN EL COMENTARIO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>"El uso de [figura] permite expresar…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"La [figura] refuerza la idea de…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Este recurso crea un efecto de…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>Siempre citar el texto entre comillas al analizar</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 9 ══ -->
+<section class="ficha-section" id="f9">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 09</div>
+ <div>
+ <h2>MÉTODO COMENTARIO DE TEXTO</h2>
+ <p>Las 4 etapas para un análisis literario brillante</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 📝 MÉTODO COMENTARIO<br>
+ <span class="central-node-sub">4 etapas · Oral y escrito</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">1</div>INTRODUCCIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Autor, obra, año, género y movimiento literario</div>
+ <div class="leaf"><div class="leaf-dot"></div>Situar el fragmento en su contexto narrativo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Enunciar la <strong>problemática central</strong> claramente</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Se trata de un fragmento de [obra] de [autor] en el que…"</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">2</div>ANÁLISIS FORMAL</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Narrador, tiempo, espacio y estructura del texto</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Campo léxico</strong> dominante → tema central</div>
+ <div class="leaf"><div class="leaf-dot"></div>Figuras retóricas con citas textuales entre comillas</div>
+ <div class="leaf"><div class="leaf-dot"></div>"El uso de [figura] permite expresar…"</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">3</div>INTERPRETACIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>¿Qué denuncia, expresa o simboliza el texto?</div>
+ <div class="leaf"><div class="leaf-dot"></div>Relación con el contexto histórico del autor</div>
+ <div class="leaf"><div class="leaf-dot"></div>¿Cómo se inscribe en su movimiento literario?</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Este texto denuncia / celebra / cuestiona…"</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">4</div>CONCLUSIÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>Síntesis del mensaje del autor</div>
+ <div class="leaf"><div class="leaf-dot"></div>Apertura&nbsp;: otra obra o pregunta crítica</div>
+ <div class="leaf"><div class="leaf-dot"></div>Valoración personal del mensaje del autor</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Al fin y al cabo, esta obra nos invita a reflexionar sobre…"</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 10 ══ -->
+<section class="ficha-section" id="f10">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 10</div>
+ <div>
+ <h2>FRASES PARA EL ORAL Y EL ESCRITO</h2>
+ <p>Introducir · Analizar · Citar · Contextualizar · Concluir</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 💬 FRASES ESENCIALES<br>
+ <span class="central-node-sub">Para brillar tanto en el oral como en el escrito</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>INTRODUCIR & ANALIZAR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>"Se trata de… / Este fragmento pertenece a…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"El tema central es… / El autor denuncia / celebra…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Desde el punto de vista formal…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"El uso de [figura] permite… / El campo léxico refuerza…"</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>CITAR & CONTEXTUALIZAR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>"Como señala el autor&nbsp;: '…'"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"La expresión '[cita]' ilustra perfectamente…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Este texto se inscribe en el contexto de…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"En efecto, en aquella época…"</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>RELACIONAR & CONCLUIR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>"Al igual que en… también se observa aquí…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Podemos establecer un paralelismo con…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"En definitiva, esta obra nos invita a…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Lo que queda es la cuestión de…"</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>GANAR TIEMPO ORAL</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div>"Si no me equivoco…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Permítame reformular esta idea…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Lo que resulta más llamativo es que…"</div>
+ <div class="leaf"><div class="leaf-dot"></div>"Resulta llamativo que… / No deja de ser significativo que…"</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 11 ══ -->
+<section class="ficha-section" id="f11">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 11</div>
+ <div>
+ <h2>EL SIGLO DE ORO ESPAÑOL</h2>
+ <p>Cervantes · Lazarillo · Quevedo · Góngora · Lope · Calderón</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 👑 SIGLO DE ORO<br>
+ <span class="central-node-sub">Siglos XVI–XVII · Conceptismo · Culteranismo · Picaresca</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>CERVANTES & LAZARILLO</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Cervantes</strong> — Don Quijote <span class="date-tag">1605/1615</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Primera novela moderna · metaficción · realidad vs ilusión</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Lazarillo de Tormes</strong> <span class="date-tag">~1554</span> — anónimo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Primera picaresca · crítica social e Iglesia · 1ª persona</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>QUEVEDO & GÓNGORA</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Quevedo</strong> — El Buscón · Conceptismo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Ingenio verbal · crítica social mordaz · pesimismo barroco</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Góngora</strong> — Soledades · Culteranismo/Gongorismo</div>
+ <div class="leaf"><div class="leaf-dot"></div>Lenguaje hermético · metáforas complejas · belleza formal</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>LOPE & CALDERÓN</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Lope de Vega</strong> — Fuenteovejuna, El perro del hortelano</div>
+ <div class="leaf"><div class="leaf-dot"></div>Arte nuevo · teatro popular · honor · "Monstruo de la naturaleza"</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Calderón</strong> — La vida es sueño</div>
+ <div class="leaf"><div class="leaf-dot"></div>Barroco tardío · libre albedrío · "¿Qué es la vida? Un frenesí"</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>CONCEPTOS CLAVE</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Picaresca</strong> — pícaro, autobiografía ficticia, ascenso fallido</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Conceptismo</strong> — ingenio, agudeza, doble sentido (Quevedo)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Culteranismo</strong> — lenguaje hermético, latinismos (Góngora)</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Auto sacramental</strong> — teatro religioso alegórico, Corpus Christi</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+<!-- ══ FICHA 12 ══ -->
+<section class="ficha-section" id="f12">
+ <div class="ficha-header">
+ <div class="ficha-num">FICHA 12</div>
+ <div>
+ <h2>AUTORES IMPRESCINDIBLES ADICIONALES</h2>
+ <p>Duras · Beauvoir · Neruda · Borges · Kafka · Woolf · García Márquez</p>
+ </div>
+ </div>
+ <div class="mindmap">
+ <div class="central-node">
+ 🌍 AUTORES ADICIONALES<br>
+ <span class="central-node-sub">Literatura universal · Siglos XX–XXI</span>
+ </div>
+ <div class="branches">
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">A</div>DURAS & BEAUVOIR</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Duras</strong> <span class="date-tag">1914-1996</span> — L'Amant, Hiroshima mon amour</div>
+ <div class="leaf"><div class="leaf-dot"></div>Nouveau Roman tardío · amor prohibido · escritura del silencio</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Beauvoir</strong> <span class="date-tag">1908-1986</span> — Le Deuxième Sexe</div>
+ <div class="leaf"><div class="leaf-dot"></div>"On ne naît pas femme, on le devient" · existencialismo feminista</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">B</div>NERUDA & BORGES</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Neruda</strong> <span class="date-tag">1904-1973</span> — Veinte poemas de amor · Nobel <span class="date-tag">1971</span></div>
+ <div class="leaf"><div class="leaf-dot"></div>Amor · naturaleza · compromiso político · voz de América</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Borges</strong> <span class="date-tag">1899-1986</span> — Ficciones, El Aleph</div>
+ <div class="leaf"><div class="leaf-dot"></div>Laberintos · espejos · infinito · metaficción · fantástico</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">C</div>KAFKA & WOOLF</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>Kafka</strong> <span class="date-tag">1883-1924</span> — La Métamorphose, Le Procès</div>
+ <div class="leaf"><div class="leaf-dot"></div>Absurdo · burocracia alienante · angustia · "kafkiano"</div>
+ <div class="leaf"><div class="leaf-dot"></div><strong>Woolf</strong> <span class="date-tag">1882-1941</span> — Mrs Dalloway, To the Lighthouse</div>
+ <div class="leaf"><div class="leaf-dot"></div>Monólogo interior · feminismo · "una habitación propia"</div>
+ </div>
+ </div>
+ <div class="branch">
+ <div class="branch-header"><div class="branch-icon">D</div>GARCÍA MÁRQUEZ</div>
+ <div class="branch-body">
+ <div class="leaf"><div class="leaf-dot"></div><strong>García Márquez</strong> <span class="date-tag">1927-2014</span> — Cien años de soledad</div>
+ <div class="leaf"><div class="leaf-dot"></div>Realismo mágico · Macondo · memoria familiar e histórica</div>
+ <div class="leaf"><div class="leaf-dot"></div>Nobel <span class="date-tag">1982</span> · mitos fundadores de América Latina</div>
+ <div class="leaf"><div class="leaf-dot"></div>El amor en los tiempos del cólera · narrativa épica</div>
+ </div>
+ </div>
+ </div>
+ </div>
+</section>
+
+</main>
+
+<footer>
+ BACHIBAC · LITERATURA · CARTES MENTALES &nbsp;·&nbsp; © Constance | @constance.cgh &nbsp;·&nbsp; Retrouve toutes mes fiches sur mes réseaux
+</footer>
+
+<script>
+function show(n) {
+ document.querySelectorAll('.ficha-section').forEach(s => s.classList.remove('active'));
+ document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+ document.getElementById('f' + n).classList.add('active');
+ document.querySelectorAll('.nav-btn')[n-1].classList.add('active');
+ window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>

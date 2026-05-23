@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carte du Monde Interactive · Geografía Bachibac · @constance.cgh</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0A1628;
+    --ocean: #0D2137;
+    --surface: #112236;
+    --accent: #2D6A4F;
+    --accent-d: #1B4332;
+    --accent-l: #52B788;
+    --gold: #C9A84C;
+    --cream: #FCE8DF;
+    --white: #F0F4F8;
+    --light: #7A90A8;
+    --border: rgba(255,255,255,0.08);
+    --choke: #E74C3C;
+    --triada: #F39C12;
+    --brics: #8E44AD;
+    --org: #2980B9;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--accent-d);
+    border-bottom: 3px solid var(--gold);
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+  .header-left h1 { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; }
+  .header-left p { font-size: 10px; font-weight: 300; color: var(--cream); margin-top: 1px; }
+  .header-tag {
+    background: rgba(255,255,255,0.12); color: var(--cream);
+    font-size: 9px; font-weight: 600;
+    padding: 4px 12px; border-radius: 20px; letter-spacing: 1px;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .legend-label { font-size: 9px; color: var(--light); font-weight: 600; letter-spacing: 1px; margin-right: 4px; }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    padding: 3px 10px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 10px;
+    color: var(--light);
+    font-weight: 500;
+  }
+  .legend-item:hover { background: rgba(255,255,255,0.1); color: var(--white); }
+  .legend-item.active { color: var(--white); font-weight: 600; }
+  .legend-item[data-layer="choke"].active { background: rgba(231,76,60,0.2); border-color: var(--choke); color: var(--choke); }
+  .legend-item[data-layer="triada"].active { background: rgba(243,156,18,0.2); border-color: var(--triada); color: var(--triada); }
+  .legend-item[data-layer="brics"].active { background: rgba(142,68,173,0.2); border-color: var(--brics); color: var(--brics); }
+  .legend-item[data-layer="org"].active { background: rgba(41,128,185,0.2); border-color: var(--org); color: var(--org); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── MAP CONTAINER ── */
+  .map-layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .map-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: var(--ocean);
+  }
+
+  svg#worldmap {
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+  }
+  svg#worldmap:active { cursor: grabbing; }
+
+  /* Countries */
+  .country {
+    fill: #1A3550;
+    stroke: #0D2137;
+    stroke-width: 0.5;
+    transition: fill 0.2s;
+  }
+  .country:hover { fill: #243f5e; }
+  .country.triada { fill: rgba(243,156,18,0.25); stroke: rgba(243,156,18,0.5); }
+  .country.brics { fill: rgba(142,68,173,0.25); stroke: rgba(142,68,173,0.5); }
+  .country.triada.brics { fill: rgba(200,100,100,0.25); }
+
+  /* Markers */
+  .marker {
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .marker circle {
+    transition: all 0.2s;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  .marker:hover circle { r: 10; }
+  .marker.active circle { r: 12; filter: drop-shadow(0 0 8px currentColor); }
+  .marker text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 9px;
+    font-weight: 600;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
+
+  .marker-choke circle { fill: var(--choke); }
+  .marker-choke text { fill: white; }
+  .marker-triada circle { fill: var(--triada); }
+  .marker-triada text { fill: var(--bg); }
+  .marker-brics circle { fill: var(--brics); }
+  .marker-brics text { fill: white; }
+  .marker-org circle { fill: var(--org); }
+  .marker-org text { fill: white; }
+
+  .layer-choke, .layer-triada, .layer-brics, .layer-org { transition: opacity 0.3s; }
+  .layer-hidden { opacity: 0.1; pointer-events: none; }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel {
+    width: 320px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent) transparent;
+  }
+  .detail-panel::-webkit-scrollbar { width: 3px; }
+  .detail-panel::-webkit-scrollbar-thumb { background: var(--accent); }
+
+  .detail-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--light);
+    text-align: center;
+    padding: 28px;
+    gap: 10px;
+  }
+  .detail-empty .icon { font-size: 32px; opacity: 0.4; }
+  .detail-empty p { font-size: 11px; line-height: 1.6; }
+
+  .detail-content { padding: 20px; display: none; }
+  .detail-content.visible { display: block; }
+
+  .detail-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .detail-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .detail-sub {
+    font-size: 10px;
+    color: var(--light);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .detail-divider {
+    height: 1px;
+    background: var(--border);
+    margin: 12px 0;
+  }
+  .detail-section-title {
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+
+
+  .bullet::before { content: '→'; color: var(--gold); font-weight: 700; flex-shrink: 0; }
+  .bullet strong { color: var(--white); }
+
+  .exam-tip strong { color: var(--accent-l); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>✦ CARTE DU MONDE INTERACTIVE · GEOGRAFÍA BACHIBAC</h1>
+    <p>Chokepoints · Triada · BRICS · Organisations · Clique sur un point pour voir le détail</p>
+  </div>
+  <div class="header-tag">TERMINALE BACHIBAC</div>
+</header>
+
+<div class="legend">
+  <span class="legend-label">COUCHES :</span>
+  <div class="legend-item active" data-layer="choke" onclick="toggleLayer('choke')">
+    <div class="dot" style="background:var(--choke)"></div> Chokepoints
+  </div>
+  <div class="legend-item active" data-layer="triada" onclick="toggleLayer('triada')">
+    <div class="dot" style="background:var(--triada)"></div> La Triada
+  </div>
+  <div class="legend-item active" data-layer="brics" onclick="toggleLayer('brics')">
+    <div class="dot" style="background:var(--brics)"></div> BRICS
+  </div>
+  <div class="legend-item active" data-layer="org" onclick="toggleLayer('org')">
+    <div class="dot" style="background:var(--org)"></div> Puertos hub & ZEE
+  </div>
+</div>
+
+<div class="map-layout">
+  <div class="map-wrap">
+    <svg id="worldmap" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="oceanGrad" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" style="stop-color:#0D2137"/>
+          <stop offset="100%" style="stop-color:#081420"/>
+        </radialGradient>
+      </defs>
+      <rect width="1000" height="500" fill="url(#oceanGrad)"/>
+
+      <!-- Simplified world map paths -->
+      <!-- North America -->
+      <path class="country triada" d="M 60 80 L 180 70 L 220 90 L 240 140 L 220 180 L 190 200 L 160 210 L 130 240 L 100 260 L 80 240 L 60 200 L 50 160 L 55 120 Z" />
+      <!-- Central America -->
+      <path class="country" d="M 160 210 L 190 200 L 200 225 L 185 240 L 165 235 Z" />
+      <!-- South America -->
+      <path class="country brics" d="M 170 250 L 220 240 L 260 260 L 280 310 L 270 370 L 240 410 L 200 420 L 175 400 L 155 360 L 150 310 L 160 270 Z" />
+      <!-- Europe -->
+      <path class="country triada" d="M 440 60 L 500 55 L 520 70 L 510 100 L 490 115 L 460 120 L 440 110 L 430 90 Z" />
+      <!-- UK -->
+      <path class="country triada" d="M 430 65 L 445 58 L 450 75 L 440 85 L 428 78 Z" />
+      <!-- Scandinavia -->
+      <path class="country triada" d="M 470 40 L 500 35 L 510 55 L 495 65 L 475 62 L 465 50 Z" />
+      <!-- Africa -->
+      <path class="country" d="M 450 130 L 510 120 L 545 140 L 560 180 L 570 240 L 555 300 L 530 340 L 500 360 L 470 340 L 450 300 L 440 250 L 435 200 L 440 160 Z" />
+      <!-- Russia -->
+      <path class="country brics" d="M 510 50 L 700 40 L 730 60 L 720 90 L 680 100 L 620 110 L 560 105 L 520 90 L 508 70 Z" />
+      <!-- Middle East -->
+      <path class="country" d="M 540 120 L 590 115 L 620 130 L 615 160 L 590 170 L 555 165 L 540 148 Z" />
+      <!-- India -->
+      <path class="country brics" d="M 620 140 L 660 135 L 675 165 L 665 205 L 645 220 L 620 210 L 605 185 L 608 158 Z" />
+      <!-- China -->
+      <path class="country brics" d="M 660 90 L 730 85 L 760 100 L 765 130 L 745 155 L 710 165 L 675 160 L 655 145 L 645 120 Z" />
+      <!-- Southeast Asia -->
+      <path class="country" d="M 730 150 L 770 145 L 785 165 L 775 185 L 750 190 L 730 178 Z" />
+      <!-- Japan/Korea -->
+      <path class="country triada" d="M 790 100 L 815 95 L 825 115 L 810 130 L 790 125 Z" />
+      <!-- Australia -->
+      <path class="country triada" d="M 760 300 L 840 285 L 875 305 L 880 350 L 855 380 L 810 390 L 770 370 L 750 340 L 752 310 Z" />
+      <!-- Indonesia/Malaysia -->
+      <path class="country" d="M 735 195 L 790 190 L 810 205 L 805 220 L 775 225 L 740 215 Z" />
+      <!-- Southern Africa -->
+      <path class="country brics" d="M 490 310 L 530 305 L 545 335 L 535 365 L 510 375 L 488 355 L 482 325 Z" />
+      <!-- Central Asia -->
+      <path class="country" d="M 580 100 L 635 95 L 650 115 L 640 135 L 600 140 L 575 125 Z" />
+      <!-- North Africa -->
+      <path class="country" d="M 440 125 L 550 118 L 545 145 L 510 155 L 460 158 L 438 145 Z" />
+
+      <!-- ═══ MARKERS ═══ -->
+
+      <!-- CHOKEPOINTS -->
+      <g class="layer-choke">
+        <!-- Estrecho de Malaca -->
+        <g class="marker marker-choke" data-id="malaca" onclick="showDetail('malaca')">
+          <circle cx="748" cy="205" r="8"/>
+          <text x="748" y="225" text-anchor="middle">Malaca</text>
+        </g>
+        <!-- Canal de Panamá -->
+        <g class="marker marker-choke" data-id="panama" onclick="showDetail('panama')">
+          <circle cx="168" cy="228" r="8"/>
+          <text x="168" y="248" text-anchor="middle">Panamá</text>
+        </g>
+        <!-- Estrecho de Ormuz -->
+        <g class="marker marker-choke" data-id="ormuz" onclick="showDetail('ormuz')">
+          <circle cx="600" cy="158" r="8"/>
+          <text x="600" y="178" text-anchor="middle">Ormuz</text>
+        </g>
+        <!-- Canal de Suez / Bab el-Mandeb -->
+        <g class="marker marker-choke" data-id="suez" onclick="showDetail('suez')">
+          <circle cx="535" cy="148" r="8"/>
+          <text x="535" y="168" text-anchor="middle">Suez</text>
+        </g>
+
+      </g>
+
+      <!-- TRIADA -->
+      <g class="layer-triada">
+        <!-- Triada Global -->
+        <g class="marker marker-triada" data-id="triada_global" onclick="showDetail('triada_global')">
+          <circle cx="500" cy="245" r="11"/>
+          <text x="500" y="232" text-anchor="middle">La Triada</text>
+        </g>
+        <!-- North America -->
+        <g class="marker marker-triada" data-id="northamerica" onclick="showDetail('northamerica')">
+          <circle cx="130" cy="155" r="10"/>
+          <text x="130" y="142" text-anchor="middle">Amérique N.</text>
+        </g>
+        <!-- Europe -->
+        <g class="marker marker-triada" data-id="europe" onclick="showDetail('europe')">
+          <circle cx="475" cy="88" r="10"/>
+          <text x="475" y="75" text-anchor="middle">Europe</text>
+        </g>
+        <!-- Asia-Pacifique -->
+        <g class="marker marker-triada" data-id="asiapac" onclick="showDetail('asiapac')">
+          <circle cx="800" cy="118" r="10"/>
+          <text x="800" y="105" text-anchor="middle">Asie-Pac.</text>
+        </g>
+      </g>
+
+      <!-- BRICS -->
+      <g class="layer-brics">
+        <!-- Brasil -->
+        <g class="marker marker-brics" data-id="brasil" onclick="showDetail('brasil')">
+          <circle cx="215" cy="330" r="9"/>
+          <text x="215" y="348" text-anchor="middle">Brasil</text>
+        </g>
+        <!-- Russia -->
+        <g class="marker marker-brics" data-id="russia" onclick="showDetail('russia')">
+          <circle cx="620" cy="68" r="9"/>
+          <text x="620" y="56" text-anchor="middle">Rusia</text>
+        </g>
+        <!-- India -->
+        <g class="marker marker-brics" data-id="india" onclick="showDetail('india')">
+          <circle cx="640" cy="178" r="9"/>
+          <text x="640" y="196" text-anchor="middle">India</text>
+        </g>
+        <!-- China -->
+        <g class="marker marker-brics" data-id="china" onclick="showDetail('china')">
+          <circle cx="715" cy="125" r="9"/>
+          <text x="715" y="113" text-anchor="middle">China</text>
+        </g>
+        <!-- South Africa -->
+        <g class="marker marker-brics" data-id="safrica" onclick="showDetail('safrica')">
+          <circle cx="510" cy="345" r="9"/>
+          <text x="510" y="333" text-anchor="middle">Sudáfrica</text>
+        </g>
+      </g>
+
+      <!-- PMA marker -->
+      <g class="layer-brics">
+        <g class="marker marker-brics" data-id="pma" onclick="showDetail('pma')" style="opacity:0.6">
+          <circle cx="490" cy="270" r="8" fill="#7F8C8D"/>
+          <text x="490" y="258" text-anchor="middle" fill="white">PMA</text>
+        </g>
+      </g>
+      <!-- PORTS HUB & ZEE -->
+      <g class="layer-org">
+        <!-- Rotterdam -->
+        <g class="marker marker-org" data-id="rotterdam" onclick="showDetail('rotterdam')">
+          <circle cx="460" cy="72" r="7"/>
+          <text x="460" y="60" text-anchor="middle">Rotterdam</text>
+        </g>
+        <!-- Shanghai -->
+        <g class="marker marker-org" data-id="shanghai" onclick="showDetail('shanghai')">
+          <circle cx="760" cy="130" r="7"/>
+          <text x="760" y="118" text-anchor="middle">Shanghai</text>
+        </g>
+        <!-- Singapur -->
+        <g class="marker marker-org" data-id="singapur" onclick="showDetail('singapur')">
+          <circle cx="752" cy="213" r="7"/>
+          <text x="785" y="213" text-anchor="middle">Singapur</text>
+        </g>
+        <!-- ZEE France -->
+        <g class="marker marker-org" data-id="zeefrance" onclick="showDetail('zeefrance')">
+          <circle cx="300" cy="320" r="7"/>
+          <text x="300" y="308" text-anchor="middle">ZEE France</text>
+        </g>
+        <!-- Le Havre -->
+        <g class="marker marker-org" data-id="lehavre" onclick="showDetail('lehavre')">
+          <circle cx="447" cy="80" r="7"/>
+          <text x="430" y="93" text-anchor="middle">Le Havre</text>
+        </g>
+      </g>
+
+    </svg>
+  </div>
+
+  <!-- ── DETAIL PANEL ── -->
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-empty" id="emptyState">
+      <div class="icon">🌍</div>
+      <p>Clique sur un point<br>pour voir le détail géographique<br>et ce qu'il faut retenir pour l'examen</p>
+    </div>
+    <div class="detail-content" id="detailContent"></div>
+  </div>
+</div>
+
+<script>
+const data = {
+  malaca: {
+    name: 'Estrecho de Malaca', badge: '🔴 Chokepoint', badgeColor: '#E74C3C',
+    sub: 'Entre Malaysia, Sumatra e Indonesia',
+    bullets: ['30% del comercio mundial', '80% del petróleo importado por China', 'Ruta Asia — Oriente Medio — Europa', 'Zona de piratería activa'],
+  },
+  panama: {
+    name: 'Canal de Panamá', badge: '🔴 Chokepoint', badgeColor: '#E74C3C',
+    sub: 'Conecta el Pacífico con el Atlántico · 82 km',
+    bullets: ['5% del tráfico mundial · 40% contenedores EE.UU.', '50% comercio costa este EE.UU. / Asia Oriental', 'Afectado por sequías → -50% caudal', 'Alternativa: contornar el Cabo de Hornos → +14 días'],
+  },
+  ormuz: {
+    name: 'Estrecho de Ormuz', badge: '🔴 Chokepoint', badgeColor: '#E74C3C',
+    sub: 'Entre Irán y Omán · Golfo Pérsico',
+    bullets: ['30% del flujo mundial de petróleo crudo', 'Única salida marítima del Golfo Pérsico', 'Riesgo geopolítico: ataques hutíes, incautaciones iraníes', 'Indispensable para Arabia Saudí, Irak, Kuwait, EAU'],
+  },
+  suez: {
+    name: 'Canal de Suez / Bab el-Mandeb', badge: '🔴 Chokepoint', badgeColor: '#E74C3C',
+    sub: 'Egipto / Yemen — Mar Rojo → Mediterráneo',
+    bullets: ['12% del tráfico global · 22% del comercio de contenedores', 'Conflicto Yemen: -40% tráfico desde 2023', 'Alternativa: rodear África +10 días', 'Crisis Ever Given (2021): 6 días bloqueado'],
+  },
+  triada_global: {
+    name: 'La Triada — Datos Globales', badge: '🟡 La Triada', badgeColor: '#F39C12',
+    sub: 'América del Norte + Europa Occidental + Asia-Pacífico',
+    bullets: ['80% del PIB mundial', '75% del comercio mundial', '90% de las transacciones financieras', '75% de la I+D mundial · 10 chokepoints en el mundo'],
+  },
+  northamerica: {
+    name: 'América del Norte — La Triada', badge: '🟡 La Triada', badgeColor: '#F39C12',
+    sub: 'EE.UU. · Canadá · México',
+    bullets: ['80% PIB mundial (junto con Europa y Asia-Pac.)', 'EE.UU. → 1ª economía mundial, Wall Street', 'TLCAN/CUSMA → zona de libre comercio', 'Nueva York → metrópolis global de referencia'],
+  },
+  europe: {
+    name: 'Europa Occidental — La Triada', badge: '🟡 La Triada', badgeColor: '#F39C12',
+    sub: 'UE · Eje franco-alemán · "Banana azul"',
+    bullets: ['75% del comercio mundial (Triada)', 'Megalópolis europea: eje Londres-Milán ("Banana azul")', 'Eje franco-alemán → motor político y económico de la UE', 'Centros financieros: Londres, Fráncfort, París'],
+  },
+  asiapac: {
+    name: 'Asia-Pacífico — La Triada', badge: '🟡 La Triada', badgeColor: '#F39C12',
+    sub: 'Japón · Corea del Sur · Australia · Singapur',
+    bullets: ['90% de las transacciones financieras mundiales', 'Tigres asiáticos: Corea del Sur, Taiwán, Singapur, HK', 'Tokio → centro financiero global', '75% de la I+D mundial'],
+  },
+  brasil: {
+    name: 'Brasil — BRICS', badge: '🟣 BRICS', badgeColor: '#8E44AD',
+    sub: 'Recursos naturales · Agropoder · Amazonia',
+    bullets: ['1er exportador mundial de soja, carne y café', 'Recursos naturales: petróleo, minerales, biodiversidad', 'São Paulo → principal metrópolis de América Latina', 'Desafíos: desigualdades extremas, deforestación'],
+  },
+  russia: {
+    name: 'Rusia — BRICS', badge: '🟣 BRICS', badgeColor: '#8E44AD',
+    sub: 'Hidrocarburos · Potencia militar',
+    bullets: ['1er país del mundo en superficie (17M km²)', 'Hidrocarburos → 60% de los ingresos del Estado', 'Potencia nuclear: 2ª tras EE.UU.', 'Ártico → nuevas rutas marítimas por el deshielo'],
+  },
+  india: {
+    name: 'India — BRICS', badge: '🟣 BRICS', badgeColor: '#8E44AD',
+    sub: '1er país por población (2023) · Servicios digitales',
+    bullets: ['1.430 millones de habitantes — 1º del mundo', 'Servicios digitales → capital mundial de la externalización IT', 'Bangalore → "Silicon Valley asiático"', 'Demografía: mayor población activa del mundo en 2030'],
+  },
+  china: {
+    name: 'China — BRICS', badge: '🟣 BRICS', badgeColor: '#8E44AD',
+    sub: '2ª economía mundial · "Fábrica del mundo"',
+    bullets: ['Reformas Deng Xiaoping (1978) → ZEE: Shenzhen, +9,5%/año', '"Fábrica del mundo" → 30% exportaciones mundiales de manufacturas', 'Nueva Ruta de la Seda (2013) → infraestructuras en 70+ países', '"Collar de Perlas" → control de puertos estratégicos'],
+  },
+  safrica: {
+    name: 'Sudáfrica — BRICS', badge: '🟣 BRICS', badgeColor: '#8E44AD',
+    sub: 'Puerta de acceso a África',
+    bullets: ['1ª economía de África subsahariana', 'Recursos mineros: oro, diamantes, platino', 'Johannesburgo → principal centro financiero de África', 'Puerta de entrada de los BRICS en el continente africano'],
+  },
+  pma: {
+    name: 'Países Excluidos / PMA', badge: '🟣 Periferias', badgeColor: '#7F8C8D',
+    sub: 'Países Menos Adelantados · marginalizados de la globalización',
+    bullets: ['PMA excluidos o marginalizados: Haití, Chad, Malí...', 'Se integran solo vía turismo o recursos naturales', 'Neocolonialismo económico persiste en muchos casos', 'Desigualdades persistentes entre centros y periferias'],
+  },
+  rotterdam: {
+    name: 'Puerto de Rotterdam', badge: '🔵 Puerto Hub', badgeColor: '#2980B9',
+    sub: 'Países Bajos · 1er puerto europeo',
+    bullets: ['1er puerto de Europa · 14M contenedores/año', 'Hinterland: conecta con todo el norte de Europa', 'Foreland: conexiones directas con todos los continentes', 'Referencia del concepto "puerto hub"'],
+  },
+  shanghai: {
+    name: 'Puerto de Shanghai', badge: '🔵 Puerto Hub', badgeColor: '#2980B9',
+    sub: 'China · 1er puerto mundial',
+    bullets: ['1er puerto del mundo desde 2010 · 45M contenedores/año', 'Símbolo del ascenso de China en la globalización', 'Exportaciones masivas de manufacturas chinas', 'Refleja la litoralización y metropolización costera'],
+  },
+  singapur: {
+    name: 'Puerto de Singapur', badge: '🔵 Puerto Hub', badgeColor: '#2980B9',
+    sub: 'Ciudad-Estado · Nudo del Estrecho de Malaca',
+    bullets: ['2º puerto del mundo · 37M contenedores/año', 'Tigre asiático → modelo de desarrollo ultraacelerado', 'Control estratégico del Estrecho de Malaca', 'Hub financiero y logístico del Sudeste Asiático'],
+  },
+  zeefrance: {
+    name: 'ZEE de Francia — 2ª del mundo', badge: '🔵 ZEE France', badgeColor: '#2980B9',
+    sub: 'Polinesia · Antillas · Guayana · Reunión · Nueva Caledonia',
+    bullets: ['11 millones de km² → 2ª ZEE mundial tras EE.UU.', '96% proviene de los territorios de ultramar', '3er país pesquero de la UE (11% producción europea)', 'CMA-CGM Marsella = 4º armador mundial · EXTRAPLAC (2002)'],
+  },
+  lehavre: {
+    name: 'Puerto de Le Havre', badge: '🔵 Puerto France', badgeColor: '#2980B9',
+    sub: '1er puerto francés · Normandía',
+    bullets: ['12º en Europa · 56º en el mundo', '3M contenedores/año (vs 45M Shanghai)', '7 puertos concentran el 76% del tráfico portuario francés', 'Fragilidad portuaria francesa vs Rotterdam o Shanghai'],
+  },
+};
+
+let activeMarker = null;
+const layers = { choke: true, triada: true, brics: true, org: true };
+
+function showDetail(id) {
+  const d = data[id];
+  if (!d) return;
+
+  if (activeMarker) {
+    document.querySelector(`.marker[data-id="${activeMarker}"]`)?.classList.remove('active');
+  }
+  activeMarker = id;
+  document.querySelector(`.marker[data-id="${id}"]`)?.classList.add('active');
+
+  document.getElementById('emptyState').style.display = 'none';
+  const content = document.getElementById('detailContent');
+  content.className = 'detail-content visible';
+
+
+
+  const bulletsHtml = d.bullets.map(b => `<div class="bullet">${b}</div>`).join('');
+  content.innerHTML = `
+    <span class="detail-badge" style="background:${d.badgeColor}22;color:${d.badgeColor};border:1px solid ${d.badgeColor}44">${d.badge}</span>
+    <div class="detail-name">${d.name}</div>
+    <div class="detail-sub">${d.sub}</div>
+    <div class="detail-divider"></div>
+    <div class="detail-section-title">POINTS ESSENTIELS</div>
+    ${bulletsHtml}
+  `;
+}
+
+function toggleLayer(layer) {
+  layers[layer] = !layers[layer];
+  const btn = document.querySelector(`[data-layer="${layer}"]`);
+  const els = document.querySelectorAll(`.layer-${layer}`);
+  if (layers[layer]) {
+    btn.classList.add('active');
+    els.forEach(e => e.classList.remove('layer-hidden'));
+  } else {
+    btn.classList.remove('active');
+    els.forEach(e => e.classList.add('layer-hidden'));
+  }
+}
+
+// Initialize all layers as active
+document.querySelectorAll('.legend-item').forEach(b => b.classList.add('active'));
+</script>
+</body>
+</html>
