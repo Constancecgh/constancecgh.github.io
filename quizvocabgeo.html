@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Vocabulario · Geografía Bachibac · @constance.cgh</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+  :root {
+    --bg: #0A1628; --surface: #112236; --accent: #2D6A4F; --accent-d: #1B4332;
+    --gold: #C9A84C; --cream: #FCE8DF; --white: #F0F4F8; --light: #7A90A8;
+    --border: rgba(255,255,255,0.08); --green: #27AE60; --red: #E74C3C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: var(--accent-d); border-bottom: 3px solid var(--gold); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .header-left h1 { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; }
+  .header-left p { font-size: 10px; font-weight: 300; color: var(--cream); margin-top: 1px; }
+  .header-tag { background: rgba(255,255,255,0.12); color: var(--cream); font-size: 9px; font-weight: 600; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; }
+  .score-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; display: flex; align-items: center; gap: 20px; }
+  .score-item { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 500; }
+  .score-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .score-val { font-size: 16px; font-weight: 700; }
+  .progress-wrap { flex: 1; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.4s; }
+  .progress-label { font-size: 10px; color: var(--light); white-space: nowrap; }
+  .filters { background: var(--surface); padding: 8px 24px; display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--border); align-items: center; }
+  .filter-label { font-size: 9px; color: var(--light); font-weight: 600; letter-spacing: 1px; margin-right: 4px; }
+  .filter-btn { background: rgba(255,255,255,0.06); color: var(--light); border: 1px solid rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif; }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: 600; }
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
+  .quiz-wrap { width: 100%; max-width: 580px; }
+  .question-counter { font-size: 10px; color: var(--light); letter-spacing: 1px; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
+  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 16px; text-align: center; position: relative; overflow: hidden; }
+  .question-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--gold); }
+  .question-theme { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .question-text { font-size: 15px; font-weight: 600; color: var(--white); line-height: 1.5; margin-bottom: 8px; }
+  .question-hint { font-size: 11px; color: var(--light); line-height: 1.5; font-style: italic; }
+  .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .answer-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 12px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 500; color: var(--white); cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.4; }
+  .answer-btn:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: var(--gold); transform: translateY(-2px); }
+  .answer-btn.correct { background: rgba(39,174,96,0.2); border-color: var(--green); color: var(--green); }
+  .answer-btn.wrong { background: rgba(231,76,60,0.2); border-color: var(--red); color: var(--red); }
+  .answer-btn.reveal { background: rgba(39,174,96,0.08); border-color: rgba(39,174,96,0.2); color: rgba(39,174,96,0.6); }
+  .answer-btn:disabled { cursor: default; transform: none; }
+  .feedback { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; display: none; animation: fadeIn 0.3s ease; }
+  .feedback.visible { display: block; }
+  .feedback-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .feedback-icon { font-size: 20px; }
+  .feedback-title { font-size: 14px; font-weight: 700; }
+  .feedback-title.correct { color: var(--green); }
+  .feedback-title.wrong { color: var(--red); }
+  .feedback-text { font-size: 11px; color: var(--light); line-height: 1.6; }
+  .feedback-text strong { color: var(--white); }
+  .next-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: none; letter-spacing: 0.5px; }
+  .next-btn:hover { background: var(--accent-d); transform: translateY(-1px); }
+  .next-btn.visible { display: block; }
+  .results { width: 100%; max-width: 500px; text-align: center; display: none; }
+  .results.visible { display: block; }
+  .results-icon { font-size: 48px; margin-bottom: 16px; }
+  .results-score { font-size: 52px; font-weight: 700; color: var(--gold); line-height: 1; margin-bottom: 6px; }
+  .results-label { font-size: 12px; color: var(--light); margin-bottom: 24px; }
+  .results-msg { font-size: 15px; color: var(--white); line-height: 1.6; margin-bottom: 28px; }
+  .results-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .results-btn { padding: 12px 24px; border-radius: 25px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
+  .results-btn.primary { background: var(--accent); color: white; }
+  .results-btn.primary:hover { background: var(--accent-d); }
+  .results-btn.secondary { background: rgba(255,255,255,0.08); color: var(--white); border: 1px solid var(--border); }
+  .results-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .breakdown-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .breakdown-val { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .breakdown-lbl { font-size: 9px; color: var(--light); letter-spacing: 1px; text-transform: uppercase; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  footer { background: var(--accent-d); color: var(--cream); font-size: 10px; text-align: center; padding: 10px; border-top: 2px solid var(--gold); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>✦ QUIZ VOCABULARIO · GEOGRAFÍA BACHIBAC</h1>
+    <p>Pon a prueba tus conocimientos sobre los conceptos clave · Haz clic en la respuesta correcta</p>
+  </div>
+  <div class="header-tag">TERMINALE BACHIBAC</div>
+</header>
+
+<div class="score-bar">
+  <div class="score-item">
+    <div class="score-dot" style="background:var(--green)"></div>
+    <span style="color:var(--light);font-size:10px">Dominadas ✅</span>
+    <span class="score-val" style="color:var(--green)" id="scoreGood">0</span>
+  </div>
+  <div class="score-item">
+    <div class="score-dot" style="background:var(--red)"></div>
+    <span style="color:var(--light);font-size:10px">Al mazo 🔄</span>
+    <span class="score-val" style="color:var(--red)" id="scoreBad">0</span>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 0</div>
+</div>
+
+<div class="filters">
+  <span class="filter-label">TEMA :</span>
+  <button class="filter-btn active" data-cat="all" onclick="setFilter('all')">🌍 Todo</button>
+  <button class="filter-btn" data-cat="mar" onclick="setFilter('mar')">🌊 Espacios marítimos</button>
+  <button class="filter-btn" data-cat="glob" onclick="setFilter('glob')">🌐 Globalización</button>
+  <button class="filter-btn" data-cat="fr" onclick="setFilter('fr')">🇫🇷 Francia</button>
+  <button class="filter-btn" data-cat="ue" onclick="setFilter('ue')">🇪🇺 UE & Territorio</button>
+</div>
+
+<main>
+  <div class="quiz-wrap" id="quizWrap">
+    <div class="question-counter" id="questionCounter">Pregunta 1 / 50</div>
+    <div class="question-card">
+      <div class="question-theme" id="questionTheme"></div>
+      <div class="question-text" id="questionText"></div>
+      <div class="question-hint" id="questionHint"></div>
+    </div>
+    <div class="answers" id="answersGrid"></div>
+    <div class="feedback" id="feedback">
+      <div class="feedback-top">
+        <span class="feedback-icon" id="feedbackIcon"></span>
+        <span class="feedback-title" id="feedbackTitle"></span>
+      </div>
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Siguiente pregunta →</button>
+  </div>
+  <div class="results" id="results">
+    <div class="results-icon" id="resultsIcon"></div>
+    <div class="results-score" id="resultsScore"></div>
+    <div class="results-label" id="resultsLabel"></div>
+    <div class="results-breakdown">
+      <div class="breakdown-card"><div class="breakdown-val" style="color:var(--green)" id="bdGood">0</div><div class="breakdown-lbl">Correctas</div></div>
+      <div class="breakdown-card"><div class="breakdown-val" style="color:var(--red)" id="bdBad">0</div><div class="breakdown-lbl">Incorrectas</div></div>
+      <div class="breakdown-card"><div class="breakdown-val" style="color:var(--gold)" id="bdTotal">0</div><div class="breakdown-lbl">Preguntas</div></div>
+    </div>
+    <div class="results-msg" id="resultsMsg"></div>
+    <div class="results-actions">
+      <button class="results-btn primary" onclick="restartQuiz()">🔄 Empezar de nuevo</button>
+      <button class="results-btn secondary" onclick="setFilter('all');restartQuiz()">🌍 Repasar todo</button>
+    </div>
+  </div>
+</main>
+
+<footer>BACHIBAC · GEOGRAFÍA · QUIZ VOCABULARIO &nbsp;·&nbsp; © Constance | @constance.cgh</footer>
+
+<script>
+const allQuestions = [
+
+  // ── ESPACIOS MARÍTIMOS ──
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es la maritimización?',
+   hint:'Proceso relacionado con el comercio marítimo',
+   answers:['Construcción de puertos militares','Proceso por el que un territorio se vuelve dependiente del comercio marítimo','Contaminación de los mares por actividades humanas','Exploración científica de los fondos marinos'],
+   correct:1,
+   explication:'<strong>Maritimización</strong> — Proceso por el que los territorios se vuelven cada vez más dependientes del comercio marítimo y portuario a larga distancia. Se traduce en masificación de flujos marítimos y desarrollo de ciudades portuarias.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es un chokepoint?',
+   hint:'Punto estratégico en las rutas marítimas mundiales',
+   answers:['Un tipo de barco portacontenedores','Un puerto hub de primer nivel mundial','Un punto de estrangulamiento estratégico indispensable para el comercio marítimo','Una zona de pesca exclusiva de 200 millas'],
+   correct:2,
+   explication:'<strong>Chokepoint</strong> — Punto de estrangulamiento: estrecho o canal estratégico indispensable para el comercio marítimo mundial. Existen 10 en el mundo. Los 4 más importantes: Malaca, Panamá, Ormuz, Suez.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es la ZEE (Zona Económica Exclusiva)?',
+   hint:'Concepto del derecho del mar · CONVEMAR',
+   answers:['Una zona de libre comercio entre países insulares','Zona franja de 12 millas donde el Estado ejerce soberanía total','Franja marítima de 200 millas donde el Estado tiene derechos exclusivos de explotación','Área marina protegida sin actividad económica permitida'],
+   correct:2,
+   explication:'<strong>ZEE</strong> — Zona Económica Exclusiva: franja marítima de <strong>200 millas náuticas</strong> donde el Estado costero tiene derechos exclusivos de explotación de los recursos. Definida por la CONVEMAR (1982).'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué establece la CONVEMAR?',
+   hint:'Convención de Montego Bay · 1982',
+   answers:['Las normas de seguridad para los buques mercantes','Los derechos y espacios marítimos de los Estados costeros','El protocolo de lucha contra la piratería marítima','Las normas de contaminación marina de la ONU'],
+   correct:1,
+   explication:'<strong>CONVEMAR</strong> — Convención de Montego Bay (1982): define los espacios marítimos y los derechos de los Estados costeros. 320 artículos. En vigor desde 1994. Establece: mar territorial (12 millas), ZEE (200 millas), plataforma continental, alta mar.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es la litoralización?',
+   hint:'Fenómeno de concentración en las costas',
+   answers:['La privatización de las playas y costas','Proceso de concentración de actividades y población en áreas costeras','La contaminación progresiva de los litorales','La construcción de infraestructuras portuarias militares'],
+   correct:1,
+   explication:'<strong>Litoralización</strong> — Proceso de concentración de actividades económicas, población y asentamientos en áreas costeras. La maritimización genera litoralización: las ciudades portuarias se convierten en motores del desarrollo.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es la contenedorización?',
+   hint:'Revolución del transporte marítimo desde 1950',
+   answers:['La construcción de grandes contenedores de almacenamiento portuario','Proceso que intensifica el uso de portacontenedores, revolucionando el transporte mundial','La gestión informatizada de los puertos modernos','El control aduanero de las mercancías marítimas'],
+   correct:1,
+   explication:'<strong>Contenedorización</strong> — Proceso que intensifica el uso de los portacontenedores, revolucionando el transporte mundial desde 1950. Facilita la intermodalidad hinterland/foreland. 85% del comercio mundial viaja por vía marítima.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es un puerto hub?',
+   hint:'Modelo: Rotterdam, Shanghai, Singapur',
+   answers:['Un puerto militar de primer rango','Un puerto histórico patrimonio de la UNESCO','Puerto estratégico que concentra el transporte de contenedores a nivel mundial','Un puerto pesquero industrial de gran capacidad'],
+   correct:2,
+   explication:'<strong>Puerto hub</strong> — Puerto estratégico que concentra el transporte de contenedores a nivel mundial. Ejemplos: Rotterdam (1º europeo), Shanghai (1º mundial), Singapur (2º mundial). Se conecta con su <strong>hinterland</strong> (interior) y <strong>foreland</strong> (destinos marítimos).'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es el hinterland de un puerto?',
+   hint:'Opuesto al foreland · zona terrestre',
+   answers:['La zona marítima de influencia de un puerto','La zona interior terrestre que se abastece de un puerto','Las rutas marítimas internacionales de un puerto','El conjunto de instalaciones portuarias industriales'],
+   correct:1,
+   explication:'<strong>Hinterland</strong> — Zona interior terrestre que se abastece de un puerto (su área de influencia terrestre). El <strong>foreland</strong> es la zona marítima o de destino hacia la que proyecta su influencia el puerto.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Cuántos chokepoints existen en el mundo?',
+   hint:'Dato clave de la fiche de Geografía',
+   answers:['5','8','10','15'],
+   correct:2,
+   explication:'Existen <strong>10 chokepoints</strong> en el mundo. Los 4 más estratégicos son: Estrecho de Malaca (30% comercio mundial), Canal de Panamá (5%), Estrecho de Ormuz (30% petróleo mundial) y Canal de Suez/Bab el-Mandeb (12% tráfico global).'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué porcentaje del comercio mundial transita por vía marítima?',
+   hint:'Dato esencial de la maritimización',
+   answers:['60%','75%','85%','95%'],
+   correct:2,
+   explication:'<strong>85%</strong> del comercio mundial transita por vía marítima. Además, el 99% de los datos digitales pasan por cables submarinos. Esto ilustra la importancia de la maritimización y de los chokepoints.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es la acuicultura?',
+   hint:'Alternativa a la pesca tradicional',
+   answers:['La gestión sostenible de los recursos pesqueros marinos','Cría controlada de especies marinas para satisfacer la demanda alimentaria','El cultivo de algas para producción de biocombustibles','La cartografía científica de los fondos oceánicos'],
+   correct:1,
+   explication:'<strong>Acuicultura</strong> — Cría controlada de especies marinas para satisfacer la demanda alimentaria. Ejemplos: mariscos en Asia, salmón en Noruega. Alternativa a la pesca industrial para evitar la sobreexplotación.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué establece la regla del "mare liberum"?',
+   hint:'Debate histórico sobre el derecho del mar · Grocio vs Selden',
+   answers:['Los mares pueden ser apropiados por los Estados','Los mares son libres para todos y no pueden apropiarse','El Estado costero controla todas las aguas adyacentes','Las potencias navales controlan los principales estrechos'],
+   correct:1,
+   explication:'<strong>Mare liberum</strong> (Grocio) — Los mares son libres para todos. Se opone al <strong>mare clausum</strong> (Selden): los mares pueden ser apropiados. La CONVEMAR (1982) establece un equilibrio entre ambas posiciones.'},
+
+  // ── GLOBALIZACIÓN ──
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Cómo define Olivier Dollfus la globalización?',
+   hint:'Definición de autor que debes citar en el examen',
+   answers:['"Expansión del capitalismo a escala internacional"','"Proceso de intensificación de los intercambios a escala mundial"','"Interdependencia económica entre los países desarrollados"','"Integración política y económica de los Estados en la ONU"'],
+   correct:1,
+   explication:'Según <strong>Olivier Dollfus</strong>: la globalización es el "proceso de intensificación de los intercambios a escala mundial". Origen: expansión del capitalismo. Tipos de flujos: comerciales, financieros, humanos e informativos.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la Triada en geografía?',
+   hint:'Controla el 80% del PIB mundial',
+   answers:['Los 3 países con mayor superficie terrestre','América del Norte + Europa Occidental + Asia-Pacífico','EE.UU. + China + Rusia · las 3 superpotencias','Los 3 bloques del G7, G20 y BRICS'],
+   correct:1,
+   explication:'<strong>La Triada</strong> — América del Norte + Europa Occidental + Asia-Pacífico. Concentra el 80% del PIB mundial, el 75% del comercio mundial y el 90% de las transacciones financieras. También el 75% de la I+D mundial.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es una ETN (Empresa Transnacional)?',
+   hint:'Actor clave de la globalización económica',
+   answers:['Una empresa estatal que opera en varios países','Empresa implantada en varios países con estrategias globales','Una organización internacional de comercio regulada por la OMC','Un fondo de inversión soberano de un Estado'],
+   correct:1,
+   explication:'<strong>ETN/FTN</strong> — Empresa Transnacional/Firma Transnacional: empresa implantada en varios países con estrategias globales. Segmentación funcional: I+D (país desarrollado) → producción (país emergente) → distribución (mercados globales). La IED es el motor clave de su localización.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la metropolización?',
+   hint:'Concentración de poder en pocas ciudades',
+   answers:['El crecimiento demográfico de las ciudades medias','Proceso de concentración de funciones de mando en un número reducido de grandes ciudades','La suburbanización de las grandes metrópolis hacia la periferia','La transformación de las ciudades industriales en ciudades de servicios'],
+   correct:1,
+   explication:'<strong>Metropolización</strong> — Proceso de concentración de funciones de mando (política, económica, cultural) en un número reducido de grandes ciudades. Metrópolis globales: Nueva York, Londres, París, Tokio. Genera el "archipiélago metropolitano mundial".'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué son los BRICS?',
+   hint:'Potencias emergentes · ascenso del Sur',
+   answers:['Los países más endeudados del mundo en desarrollo','Brasil, Rusia, India, China, Sudáfrica — potencias emergentes','Los países miembros del Movimiento de No Alineados','Los principales exportadores de materias primas del Sur Global'],
+   correct:1,
+   explication:'<strong>BRICS</strong> — Brasil (agropoder), Rusia (hidrocarburos), India (servicios digitales), China ("fábrica del mundo"), Sudáfrica (puerta de África). Representan el ascenso del Sur y el fin de la hegemonía exclusiva de la Triada → multipolaridad.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la IED (Inversión Extranjera Directa)?',
+   hint:'Motor de localización de las ETN',
+   answers:['Los préstamos del FMI a países en desarrollo','Capital invertido en un país por empresas o gobiernos extranjeros','Los intercambios comerciales entre países de la Triada','Las ayudas al desarrollo de países ricos a países pobres'],
+   correct:1,
+   explication:'<strong>IED</strong> — Inversión Extranjera Directa: capital invertido en un país por empresas o gobiernos extranjeros. Es el motor clave de la localización de las ETN. La UE es el líder mundial en IED (36% mundial). Los paraísos fiscales atraen mucha IED.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la geopolítica?',
+   hint:'Concepto que combina geografía y poder',
+   answers:['La cartografía política de los territorios nacionales','Rivalidad de poder sobre o por el territorio entre diferentes actores','El estudio de las fronteras entre Estados soberanos','La organización política de los espacios supranacionales'],
+   correct:1,
+   explication:'<strong>Geopolítica</strong> — Rivalidad de poder sobre o por el territorio entre diferentes actores. Se aplica a los conflictos sobre los chokepoints, el Ártico, las ZEE disputadas o las rutas de la Ruta de la Seda china.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué son los PMA?',
+   hint:'Países excluidos de la globalización',
+   answers:['Países con Mayores Activos · los más ricos del mundo','Países Menos Adelantados · excluidos o marginalizados de la globalización','Países con Mayor Autarquía · rechazan la globalización','Países con Más Acuerdos · mejor integrados en el comercio'],
+   correct:1,
+   explication:'<strong>PMA</strong> — Países Menos Adelantados: excluidos o marginalizados de la globalización (Haití, Chad, Malí...). Se integran solo vía turismo o recursos naturales. El neocolonialismo económico persiste en muchos casos.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es el altermundismo?',
+   hint:'Resistencia a la globalización neoliberal · ATTAC 1998',
+   answers:['Un movimiento político a favor de la globalización acelerada','Movimiento que pide un control democrático de los mercados globales','Una corriente económica que defiende el libre comercio total','Un partido político internacional contra la migración'],
+   correct:1,
+   explication:'<strong>Altermundismo</strong> — Movimiento que pide un control democrático de los mercados globales. ATTAC (1998) es su organización más conocida. Critica el poder excesivo del FMI, BM y las ETN. "Otro mundo es posible".'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la Nueva Ruta de la Seda lanzada por China?',
+   hint:'Xi Jinping · 2013 · infraestructuras en 70+ países',
+   answers:['Una ruta turística que conecta los principales destinos asiáticos','Proyecto de infraestructuras chino para conectar Asia, África y Europa','Un acuerdo de libre comercio entre China y los países del Pacífico','Una autopista marítima exclusiva para barcos chinos'],
+   correct:1,
+   explication:'<strong>Nueva Ruta de la Seda</strong> (2013, Xi Jinping) — Proyecto chino de infraestructuras en 70+ países para controlar rutas estratégicas. Se combina con el "Collar de Perlas": adquisición de puertos clave (Sri Lanka, Yibuti, Pakistán).'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la potencia según Raymond Aron?',
+   hint:'Definición de autor para el examen',
+   answers:['"La capacidad militar de un Estado para hacer la guerra"','"La capacidad de una unidad política para imponer su voluntad a otras unidades"','"El conjunto de recursos económicos y naturales de un país"','"La influencia cultural y diplomática de un Estado en el exterior"'],
+   correct:1,
+   explication:'Según <strong>Raymond Aron</strong>, la potencia es "la capacidad de una unidad política para imponer su voluntad a otras unidades". Se aplica tanto al poder duro (militar, económico) como al poder blando (soft power, influencia cultural).'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la emergencia en geografía?',
+   hint:'Proceso de los BRICS y países del Sur',
+   answers:['La aparición de nuevos conflictos geopolíticos en el Sur Global','Proceso de integración a la economía-mundo de un país con PIB per cápita inferior pero crecimiento rápido','El desarrollo sostenible de los países menos adelantados','La migración masiva de población rural hacia las ciudades'],
+   correct:1,
+   explication:'<strong>Emergencia</strong> — Proceso de integración a la economía-mundo de un país con PIB per cápita inferior al de los desarrollados pero con rápido crecimiento que le permite salir del subdesarrollo. Ejemplos: BRICS, Tigres asiáticos.'},
+
+  // ── FRANCIA ──
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Cuánto mide la ZEE francesa, la 2ª del mundo?',
+   hint:'Gracias al ultramar · solo detrás de EE.UU.',
+   answers:['5 millones de km²','8 millones de km²','11 millones de km²','15 millones de km²'],
+   correct:2,
+   explication:'La ZEE francesa mide <strong>11 millones de km²</strong> → 2ª del mundo, solo detrás de EE.UU. El <strong>96%</strong> proviene de los territorios de ultramar (Polinesia, Antillas, Guayana, Reunión...). Presencia en todos los océanos.'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Qué porcentaje de la ZEE francesa proviene del ultramar?',
+   hint:'La metrópolis sola tiene muy poca ZEE',
+   answers:['60%','75%','86%','96%'],
+   correct:3,
+   explication:'El <strong>96%</strong> de la ZEE francesa proviene de los territorios de ultramar. Sin el ultramar, Francia sería una potencia marítima muy modesta. El programa EXTRAPLAC (2002) amplió además la plataforma continental en +579.000 km².'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Qué es el soft power?',
+   hint:'Poder blando · influencia cultural francesa',
+   answers:['El poder militar de intervención rápida de un ejército','La influencia que se ejerce a través de la cultura, los valores y la imagen','La ayuda económica oficial al desarrollo de los países pobres','La diplomacia secreta a través de servicios de inteligencia'],
+   correct:1,
+   explication:'<strong>Soft power</strong> — Poder blando: influencia que se ejerce a través de la cultura, los valores y la imagen, no por la fuerza. Francia lo ejerce a través de: la francofonía (300M hablantes), el Louvre Abu Dhabi, France 24, los institutos franceses, los valores de los DDHH.'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Cuántos francófonos hay en el mundo?',
+   hint:'5ª lengua más hablada del mundo',
+   answers:['100 millones','200 millones','300 millones','500 millones'],
+   correct:2,
+   explication:'Hay <strong>300 millones de francófonos</strong> en el mundo. El francés es la 5ª lengua mundial. La OIF (Organización Internacional de la Francofonía) tiene 88 Estados miembros. Francia tiene 96 institutos franceses en el mundo.'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Qué es el heliotropismo?',
+   hint:'Fenómeno de atracción en el territorio francés',
+   answers:['La atracción por las regiones costeras francesas','La migración de jubilados hacia el extranjero','La atracción por las regiones soleadas, especialmente el sur de Francia','El éxodo rural hacia las grandes metrópolis francesas'],
+   correct:2,
+   explication:'<strong>Heliotropismo</strong> — Atracción por las regiones soleadas, especialmente el sur de Francia, para vivir o desarrollar actividades turísticas. Beneficia ciudades como Niza, Montpellier, Toulouse, Burdeos. Contribuye a recomponer el territorio francés.'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Qué es la "diagonal del vacío" en Francia?',
+   hint:'Zona de baja densidad · del noreste al suroeste',
+   answers:['El eje económico de alta velocidad París-Marsella','Franja territorial con baja densidad de población y poca actividad económica','La línea que separa Francia del Norte industrializado del Sur agrícola','El corredor de autopistas que conecta las principales metrópolis francesas'],
+   correct:1,
+   explication:'<strong>Diagonal del vacío</strong> — Franja del territorio francés con baja densidad de población y poca actividad económica, del noreste (Ardenas) al suroeste. Se opone a la "macrocefalia parisina" (París = 31% del PIB nacional). "París y el desierto francés" (Gravier, 1947).'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Qué es la macrocefalia urbana?',
+   hint:'El caso de París en Francia',
+   answers:['El crecimiento excesivo de las ciudades medianas','Concentración excesiva de poder, población y actividades en una sola ciudad','La megalópolis que se extiende entre varias ciudades cercanas','El declive de las ciudades industriales en beneficio de las metrópolis de servicios'],
+   correct:1,
+   explication:'<strong>Macrocefalia urbana</strong> — Concentración excesiva de poder, población y actividades en una sola ciudad. París = <strong>31% del PIB nacional</strong>. "París y el desierto francés" (Gravier, 1947). Fenómeno contrario a una red urbana equilibrada.'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Qué es la "Banana azul" en geografía europea?',
+   hint:'Eje económico europeo · Londres a Milán',
+   answers:['El archipiélago europeo de islas atlánticas','Eje urbano y económico europeo desde el sur de Inglaterra hasta el norte de Italia','La zona agrícola más productiva de Europa central','El corredor industrial del este de Alemania y Polonia'],
+   correct:1,
+   explication:'<strong>Banana azul</strong> — Eje urbano y económico europeo desde el sur de Inglaterra hasta el norte de Italia, pasando por el este de Francia. Concentra las principales metrópolis y centros financieros europeos. París está conectada a este eje.'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Qué es una tecnópolis?',
+   hint:'Ejemplo: Sophia-Antipolis (1974) · cerca de Niza',
+   answers:['Una ciudad completamente gestionada por inteligencia artificial','Parque científico y tecnológico que reúne empresas innovadoras, centros de investigación y formación','Una zona industrial especializada en la fabricación de componentes electrónicos','Un barrio universitario integrado en el centro de una gran metrópolis'],
+   correct:1,
+   explication:'<strong>Tecnópolis</strong> — Parque científico y tecnológico que reúne empresas innovadoras, centros de investigación y formación. Sophia-Antipolis (1974), cerca de Niza, es la pionera en Francia. Modelo de innovación territorial.'},
+
+  {cat:'fr',theme:'🇫🇷 Francia',
+   q:'¿Qué establece la Ley NOTRe de 2015?',
+   hint:'Reforma territorial francesa · 13 regiones',
+   answers:['La creación de zonas económicas especiales en el ultramar francés','La reorganización de las competencias y el número de regiones francesas a 13','La descentralización de los poderes del Estado hacia los departamentos','La fusión de los departamentos de ultramar en una sola entidad'],
+   correct:1,
+   explication:'<strong>Ley NOTRe (2015)</strong> — Nueva Organización Territorial de la República: reorganizó las competencias y el número de regiones francesas metropolitanas de 22 a <strong>13</strong>. Las regiones se convierten en los principales actores del ordenamiento territorial.'},
+
+  // ── UE & TERRITORIO ──
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es la política de cohesión de la UE?',
+   hint:'Fondos estructurales · reducir desigualdades',
+   answers:['La política de defensa común de los países miembros de la UE','Política europea que busca reducir las desigualdades territoriales y fomentar el desarrollo equilibrado','La política agrícola de subvenciones a los agricultores europeos','El conjunto de normas que regulan la migración entre países de la UE'],
+   correct:1,
+   explication:'<strong>Política de cohesión</strong> — Política europea que busca reducir las desigualdades territoriales y fomentar el desarrollo equilibrado. Instrumentos: FEDER (infraestructuras), FSE+ (empleo), Fondo de Cohesión (países con PIB < 90% media UE). 392.000 millones EUR para 2021-2027.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es el FEDER?',
+   hint:'Fondo europeo para reducir desigualdades regionales',
+   answers:['Fondo Europeo de Desarrollo Rural','Fondo Europeo de Desarrollo Regional','Fondo Europeo para la Defensa y el Rearme','Fondo Europeo de Derechos y Refugiados'],
+   correct:1,
+   explication:'<strong>FEDER</strong> — Fondo Europeo de Desarrollo Regional: financia infraestructuras y proyectos regionales para reducir los desequilibrios entre regiones de la UE. Se complementa con el <strong>FSE+</strong> (empleo, formación, inclusión social) y el <strong>Fondo de Cohesión</strong>.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es la PAC (Política Agrícola Común)?',
+   hint:'Primera política común europea · apoya a los agricultores',
+   answers:['Un acuerdo de libre comercio agrícola entre la UE y terceros países','Política europea que apoya a los agricultores y busca garantizar la seguridad alimentaria','Un protocolo medioambiental para reducir las emisiones agrícolas','Un fondo de ayuda a los países del Sur afectados por sequías'],
+   correct:1,
+   explication:'<strong>PAC</strong> — Política Agrícola Común: apoya a los agricultores europeos. Objetivo inicial: garantizar la alimentación tras la guerra. Política intervencionista y productivista. Hoy se reforma hacia una agricultura más sostenible. Representa una parte importante del presupuesto europeo.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es el dumping social?',
+   hint:'Competencia desleal dentro de la UE · prohibido desde 2018',
+   answers:['La reducción de los salarios mínimos en los países del Sur de Europa','Competencia desleal basada en menores costes laborales o normas sociales menos exigentes','La exportación de trabajadores europeos hacia países fuera de la UE','La supresión de los derechos sindicales en los países del Este de Europa'],
+   correct:1,
+   explication:'<strong>Dumping social</strong> — Competencia desleal basada en menores costes laborales o normas sociales menos exigentes. Problema entre países de la UE, especialmente entre el Oeste y el Este. Prohibido en su forma más extrema desde 2018 (directiva trabajadores desplazados).'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué son las RUP (Regiones Ultraperiféricas)?',
+   hint:'Territorios europeos alejados del continente',
+   answers:['Las regiones fronterizas de la UE con países no miembros','Las regiones montañosas con escasa densidad de población','Territorios europeos alejados del continente (Guadalupe, Guayana Francesa, Canarias...)','Los municipios rurales con menos de 1.000 habitantes en la UE'],
+   correct:2,
+   explication:'<strong>RUP</strong> — Regiones Ultraperiféricas: territorios europeos alejados del continente que forman parte de la UE. Ejemplos: Guadalupe, Martinica, Guayana Francesa, Reunión (FR), Canarias, Ceuta, Melilla (ES). Benefician de fondos europeos especiales.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es la megalópolis europea?',
+   hint:'Llamada también "Banana azul"',
+   answers:['El conjunto de todas las capitales de los países de la UE','Región densamente poblada entre Londres y Milán: motor económico de la UE','La red de ciudades medianas bien conectadas del centro de Europa','El eje mediterráneo de turismo y servicios del sur de Europa'],
+   correct:1,
+   explication:'<strong>Megalópolis europea</strong> — Región densamente poblada entre Londres y Milán: motor económico de la UE. También llamada "Banana azul". Concentra Rotterdam, Heathrow, CDG, el eje franco-alemán. Las periferias (Este, Sur) están menos integradas.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es el Espacio Schengen?',
+   hint:'Libre circulación de personas · 1995',
+   answers:['Un acuerdo de defensa militar entre países europeos','Área de libre circulación de personas sin controles fronterizos entre países miembros','Una zona de libre comercio entre la UE y sus socios mediterráneos','El espacio aéreo europeo unificado para el tráfico civil'],
+   correct:1,
+   explication:'<strong>Espacio Schengen</strong> (1995) — Área de libre circulación de personas sin controles fronterizos entre países miembros. Símbolo de la integración europea. Tensionado por la crisis de refugiados (2015) y el Brexit. No todos los países de la UE lo integran.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es la descentralización en el contexto francés?',
+   hint:'Reforma de Mitterrand 1982-83',
+   answers:['La supresión de los departamentos en beneficio de las regiones','Transferencia de competencias del Estado central hacia las colectividades territoriales','La privatización de los servicios públicos locales','La fusión de municipios pequeños en entidades más grandes'],
+   correct:1,
+   explication:'<strong>Descentralización</strong> — Transferencia de competencias del Estado central hacia las colectividades territoriales (comunas, departamentos, regiones). Iniciada bajo <strong>Mitterrand (1982-83)</strong>. Reforzada por la ley NOTRe (2015): 13 grandes regiones metropolitanas.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es Interreg?',
+   hint:'Cooperación transfronteriza europea',
+   answers:['Un acuerdo de seguridad entre policías europeas','Programa que promueve la cooperación entre regiones transfronterizas europeas','Un tren de alta velocidad que conecta capitales europeas','El sistema de comúnicación entre los parlamentos europeos'],
+   correct:1,
+   explication:'<strong>Interreg</strong> — Programa europeo que promueve la cooperación entre regiones transfronterizas. Permite proyectos comunes entre regiones de países distintos. Parte de la política de cohesión de la UE. Complementa la RTE-T (Red Transeuropea de Transporte).'},
+
+  
+
+  // ── CONCEPTOS FUNDAMENTALES MANQUANTS ──
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es un actor / agente en geografía?',
+   hint:'Puede ser un individuo, empresa, Estado u organización',
+   answers:['Un Estado soberano que actúa en el sistema internacional','Individuo, grupo, empresa, Estado u organización con acción directa o indirecta sobre los territorios','Un país con poder de veto en el Consejo de Seguridad de la ONU','Una organización internacional sin ánimo de lucro'],
+   correct:1,
+   explication:'<strong>Actor / Agente</strong> — Individuo, grupo, empresa, Estado u organización que tiene una acción directa o indirecta sobre los territorios. Ejemplos: Estados, ETN, ONG, organizaciones internacionales (FMI, OMC), ciudadanos.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es el desarrollo en geografía?',
+   hint:'Concepto ligado al bienestar de las poblaciones',
+   answers:['El crecimiento del PIB de un país durante un año','Mejora de las condiciones y de la calidad de vida de una población','El proceso de industrialización de un país emergente','La urbanización acelerada de un territorio rural'],
+   correct:1,
+   explication:'<strong>Desarrollo</strong> — Mejora de las condiciones y de la calidad de vida de una población. Va más allá del simple crecimiento económico (PIB): incluye educación, salud, derechos. Se mide también con el IDH (Índice de Desarrollo Humano).'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es un flujo en geografía?',
+   hint:'Circulación entre dos puntos del espacio',
+   answers:['La migración masiva de población en situación de crisis','Tránsito de personas, vehículos, información o bienes entre dos puntos del espacio','El movimiento de capitales entre bancos centrales','La circulación de mercancías en el interior de un país'],
+   correct:1,
+   explication:'<strong>Flujo</strong> — Tránsito de personas, vehículos, información o bienes entre dos puntos del espacio. Los flujos globales son: comerciales, financieros, humanos (migraciones) e informativos (datos digitales). La globalización intensifica estos flujos.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la integración en geografía?',
+   hint:'Proceso tendente a la unidad entre elementos',
+   answers:['La fusión política de dos Estados soberanos en uno solo','Proceso de incorporación de un elemento a otro, con transformación recíproca tendiendo a la unidad','La adhesión de un nuevo país a una organización internacional','La homogeneización cultural entre países de una misma región'],
+   correct:1,
+   explication:'<strong>Integración</strong> — Proceso de incorporación de un elemento a otro, con transformación recíproca de estos elementos tendiendo a la unidad. Ejemplo: la integración europea (de la CECA a la UE) o la integración de un país emergente en la economía-mundo.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es una interfaz en geografía?',
+   hint:'Zona de contacto entre dos sistemas territoriales',
+   answers:['Una frontera terrestre entre dos países soberanos','Zona de contacto, discontinuidad y confrontación entre dos sistemas territoriales distintos','Un puerto que sirve de punto de conexión entre el hinterland y el foreland','Un corredor de transporte que une dos metrópolis'],
+   correct:1,
+   explication:'<strong>Interfaz</strong> — Zona de contacto, discontinuidad y confrontación entre dos sistemas territoriales distintos. Ejemplos: la frontera EE.UU.-México, el Mediterráneo entre Europa y África, los estrechos estratégicos (chokepoints).'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la migración?',
+   hint:'Movimiento de población de un lugar a otro',
+   answers:['El desplazamiento temporal de turistas entre países','Movimiento de población que consiste en dejar el lugar de residencia para establecerse en otro país o región','El éxodo masivo de población causado por un desastre natural','La circulación de trabajadores dentro de un mismo país'],
+   correct:1,
+   explication:'<strong>Migración</strong> — Movimiento de población que consiste en dejar el lugar de residencia para establecerse en otro país o región, generalmente por causas económicas y sociales. Se distingue de los desplazados/refugiados (causas políticas o climáticas).'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la periferia en geografía?',
+   hint:'Relación de dominación con el centro',
+   answers:['Los suburbios de las grandes ciudades globales','Zona que sufre el dominio del centro y del cual este saca provecho','Los países situados geográficamente en los bordes de un continente','Las regiones rurales alejadas de las metrópolis nacionales'],
+   correct:1,
+   explication:'<strong>Periferia</strong> — Zona que sufre el dominio del centro y del cual este saca provecho. Ejemplos: países del Sur Global respecto a la Triada, regiones del Este de la UE respecto al centro, zonas rurales respecto a las metrópolis.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es la recomposición territorial?',
+   hint:'Transformación a largo plazo de un espacio',
+   answers:['La división de un Estado en nuevas entidades regionales','Reordenamiento a largo plazo de un espacio bajo el efecto de factores endógenos o exógenos','La fusión de municipios pequeños en entidades más grandes','La renovación urbana de un barrio degradado'],
+   correct:1,
+   explication:'<strong>Recomposición</strong> — Reordenamiento a largo plazo de un espacio bajo el efecto de factores endógenos (internos: política, economía local) o exógenos (externos: globalización, integración europea). Ejemplo: la recomposición del territorio francés por la descentralización y la metropolización.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es una red en geografía?',
+   hint:'Sistema de conexiones entre puntos del espacio',
+   answers:['Una organización internacional de cooperación entre países','Conjunto de líneas, ejes o relaciones que conectan diferentes puntos del espacio','Un sistema de alianzas militares entre potencias regionales','El conjunto de autopistas y vías de comúnicación de un país'],
+   correct:1,
+   explication:'<strong>Red</strong> — Conjunto de líneas, ejes o relaciones que conectan diferentes puntos del espacio. Ejemplos: red de puertos hub, red de cables submarinos, redes de transporte (RTE-T), redes digitales, red de ciudades globales (archipiélago metropolitano mundial).'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es el territorio en geografía?',
+   hint:'Espacio apropiado y organizado por grupos humanos',
+   answers:['La superficie terrestre delimitada por fronteras internacionales','Porción del espacio terrestre considerada en sus relaciones con los grupos humanos que la ocupan y ordenan','El conjunto de recursos naturales de un Estado soberano','La zona de influencia económica de una metrópolis global'],
+   correct:1,
+   explication:'<strong>Territorio</strong> — Porción del espacio terrestre considerada en sus relaciones con los grupos humanos que la ocupan y ordenan para satisfacer sus necesidades. Es un espacio apropiado, organizado y con identidad. Se distingue del simple "espacio" (neutro).'},
+
+  // ── ESPACIOS MARINOS vs MARÍTIMOS ──
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Cuál es la diferencia entre espacios marinos y espacios marítimos?',
+   hint:'Uno implica intervención humana y el otro no',
+   answers:['Los marinos son de aguas saladas y los marítimos de aguas dulces','Los marinos son los océanos en estado natural; los marítimos son transformados y utilizados por las sociedades','Los marinos pertenecen a Estados costeros y los marítimos son internacionales','Los marinos son zonas de pesca y los marítimos son zonas de navegación comercial'],
+   correct:1,
+   explication:'<strong>Espacios marinos</strong> — Océanos y mares en su estado natural, sin intervención humana. <strong>Espacios marítimos</strong> — Espacios marinos transformados y utilizados por las sociedades para comercio, transporte, pesca, extracción de recursos... La maritimización transforma los espacios marinos en espacios marítimos.'},
+
+  {cat:'mar',theme:'🌊 Espacios marítimos',
+   q:'¿Qué es el poder marítimo?',
+   hint:'Capacidad de un Estado sobre los mares',
+   answers:['El número de barcos de pesca de un país','Dominio del mar y capacidad de imponer su voluntad en los espacios marítimos','El control de las principales rutas comerciales terrestres','La capacidad de construcción naval de un Estado'],
+   correct:1,
+   explication:'<strong>Poder marítimo</strong> — Dominio del mar y capacidad de imponer su voluntad en los espacios marítimos. Una <strong>potencia marítima</strong> se caracteriza por: flotas militares y comerciales importantes, peso del mar en su economía, y capacidad de proteger sus recursos. Francia es una de las 6 potencias nucleares navales mundiales.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿En qué año fue creado el Banco Mundial y cuál es su función principal?',
+   hint:'BIRF · Bretton Woods · préstamos a PMA',
+   answers:['1944 · financiar la reconstrucción europea tras la 2ª GM','1945 · préstamos a PMA y financiación de proyectos de desarrollo','1947 · liberalizar el comercio mundial','1949 · estabilizar el sistema monetario internacional'],
+   correct:1,
+   explication:'<strong>Banco Mundial (BM)</strong> — Creado en 1945 (BIRF: Banco Internacional de Reconstrucción y Fomento). Concede préstamos a los PMA y financia proyectos de desarrollo. Condición: reformas liberales a cambio del financiamiento → políticas neoliberales.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Qué es el FMI y cuándo fue creado?',
+   hint:'Bretton Woods · estabilidad monetaria · PAE',
+   answers:['Fondo Mundial de Inversión · 1945 · financia infraestructuras globales','Fondo Monetario Internacional · 1944 (Bretton Woods) · estabilidad monetaria mundial','Fondo de Mercados Internacionales · 1947 · regula el comercio mundial','Fondo Multilateral de Integración · 1951 · apoya la construcción europea'],
+   correct:1,
+   explication:'<strong>FMI</strong> — Fondo Monetario Internacional: creado en 1944 (Bretton Woods). Objetivo: estabilidad monetaria mundial. Instrumento: préstamos con <strong>Programas de Ajuste Estructural (PAE)</strong> → políticas neoliberales (privatizaciones, reducción del gasto público).'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Cuál es el origen de la OMC y cuándo fue fundada?',
+   hint:'Sucede al GATT · liberalizar el comercio mundial',
+   answers:['Surge del FMI en 1989 · regula los flujos financieros internacionales','Creada por la ONU en 1945 · promueve el desarrollo sostenible','Tiene sus orígenes en el GATT (1947) · la OMC fue fundada en 1994','Fundada en 1951 junto a la CECA · regula el comercio europeo'],
+   correct:2,
+   explication:'<strong>OMC</strong> — Organización Mundial del Comercio: orígenes en el GATT (1947). La OMC fue fundada en <strong>1994</strong>. Objetivo: liberalizar el comercio mundial. Es críticada por los altermundistas (ATTAC) por favorecer a los países ricos frente a los PMA.'},
+
+  {cat:'glob',theme:'🌐 Globalización',
+   q:'¿Cuál es la diferencia entre el G7 y el G20?',
+   hint:'Uno incluye países emergentes y el otro no',
+   answers:['El G7 coordina la seguridad militar y el G20 la economía','El G7 agrupa a los países más industrializados; el G20 incluye además a los emergentes','El G7 es europeo y el G20 es global','El G7 toma decisiones vinculantes y el G20 solo hace recomendaciones'],
+   correct:1,
+   explication:'<strong>G7</strong> — Agrupa los 7 países más industrializados (EE.UU., Japón, Alemania, Francia, UK, Italia, Canadá). <strong>G20</strong> — Incluye además a los países emergentes (China, India, Brasil, Rusia...). Ambos coordinan políticas económicas globales, pero sus decisiones no son vinculantes.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Cuáles son los 6 países fundadores de la integración europea?',
+   hint:'Base de la CECA (1951) y los Tratados de Roma (1957)',
+   answers:['Francia, Alemania, Italia, España, Portugal, Grecia','Francia, Alemania, Italia, Bélgica, Países Bajos, Luxemburgo','Francia, Alemania, Reino Unido, Italia, Bélgica, Países Bajos','Francia, Alemania, Austria, Italia, Bélgica, Países Bajos'],
+   correct:1,
+   explication:'<strong>Seis Fundadores</strong> — Francia, Alemania, Italia, Bélgica, Países Bajos, Luxemburgo → base de la integración europea. Firmaron la CECA (1951) y los Tratados de Roma (1957). El <strong>eje franco-alemán</strong> sigue siendo el motor político de la UE.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué caracteriza a los "Siete Prósperos" en la UE?',
+   hint:'Contribuyentes netos · bienestar alto · apoyan las reformas',
+   answers:['Países receptores de fondos europeos con alta deuda pública','Países con bienestar alto, que apoyan reformas y son contribuyentes netos al presupuesto europeo','Los 7 países fundadores con mayor PIB de la UE','Países del norte de Europa que rechazan el euro y Schengen'],
+   correct:1,
+   explication:'<strong>Siete Prósperos</strong> — Países de la UE con alto bienestar, que apoyan las reformas europeas y son contribuyentes netos al presupuesto europeo (pagan más de lo que reciben). Se oponen a los <strong>Siete del Sur</strong>, receptores de fondos.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué caracteriza a los "Siete del Sur" en la UE?',
+   hint:'Crisis económica · migración · receptores de fondos europeos',
+   answers:['Países del sur de Europa con alto crecimiento económico y fuerte industria','Países con crisis económica, problemas de migración, menor cohesión interna y receptores de fondos','Los 7 países mediterráneos que fundaron la zona euro','Los países del sur que rechazan las políticas de austeridad de la UE'],
+   correct:1,
+   explication:'<strong>Siete del Sur</strong> — Países de la UE con crisis económica, presión migratoria, menor cohesión interna y receptores de fondos europeos (reciben más de lo que aportan). Incluye países como Grecia, España, Portugal, Italia. Se benefician del FEDER y el Fondo de Cohesión.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es el Grupo de Visegrado y qué postura adopta frente a la UE?',
+   hint:'4 países del Este de Europa · euroescepticismo',
+   answers:['Francia, Alemania, Austria y Países Bajos · defensores del federalismo europeo','Polonia, Hungría, Chequia, Eslovaquía → euroescepticismo e iliberalismo','Los países bálticos (Estonia, Letonia, Lituania) y Polonia · pro-OTAN','Rumanía, Bulgaria, Croacia y Eslovenia → integración reciente en la UE'],
+   correct:1,
+   explication:'<strong>Grupo de Visegrado</strong> — Polonia, Hungría, Chequia, Eslovaquía. Adoptan una postura de <strong>euroescepticismo e iliberalismo</strong>: rechazan las cuotas de migrantes, cuestionan el Estado de derecho y se oponen a más integración europea, aunque siguen siendo miembros de la UE y se benefician de sus fondos.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es el PIB (Producto Interior Bruto)?',
+   hint:'Principal indicador de riqueza de un territorio',
+   answers:['El valor de las exportaciones de un país durante un año','Valor total de los bienes y servicios producidos en un territorio durante un año','El presupuesto anual del Estado central de un país','La suma de los salarios pagados a los trabajadores de un país'],
+   correct:1,
+   explication:'<strong>PIB</strong> — Producto Interior Bruto: valor total de los bienes y servicios producidos en un territorio durante un año. Principal indicador de riqueza. La UE representa el 30% del PIB mundial. El PIB per cápita mide el nivel de vida medio de la población.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Cuántos países integran la zona euro en 2024?',
+   hint:'No todos los países de la UE utilizan el euro',
+   answers:['17 países','19 países','20 países','27 países'],
+   correct:2,
+   explication:'<strong>Zona euro</strong> — Conjunto de <strong>20 países</strong> de la UE que utilizan el euro como moneda común (en 2024). No todos los miembros de la UE (27) forman parte: por ejemplo, Polonia, Chequia, Hungría o Suecia mantienen su moneda nacional.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es el "mercado interior" europeo?',
+   hint:'Las 4 libertades fundamentales de la UE',
+   answers:['El mercado de productos agrícolas regulado por la PAC','Espacio económico común sin fronteras para bienes, servicios, personas y capitales','El conjunto de empresas europeas que operan dentro de la UE','La zona de libre comercio entre la UE y sus socios mediterráneos'],
+   correct:1,
+   explication:'<strong>Mercado interior</strong> — Espacio económico común sin fronteras para bienes, servicios, personas y capitales. Basado en las <strong>4 libertades</strong> fundamentales de la UE. Completado con el Espacio Schengen (personas) y el euro (capitales).'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es "Europa fortaleza"?',
+   hint:'Término crítico sobre la política migratoria de la UE',
+   answers:['El proyecto de crear un ejército común europeo de defensa','Término crítico para describir la UE como espacio que restringe el acceso a los migrantes','La política de protección arancelaria de los productos europeos','El sistema de seguridad de las fronteras exteriores de la UE'],
+   correct:1,
+   explication:'<strong>Europa fortaleza</strong> — Término crítico para describir la UE como espacio que restringe el acceso a los migrantes, especialmente los procedentes de África y Oriente Medio. Se refiere a las políticas de externalización de las fronteras (agencia Frontex) y los acuerdos con países de tránsito.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Qué es la RTE-T?',
+   hint:'Infraestructura que conecta los centros económicos europeos',
+   answers:['Red de Televisión Europea-Transfronteriza · medios de comúnicación públicos','Red Transeuropea de Transporte: infraestructura que conecta los principales centros económicos europeos','Red de Tratados Económicos-Territoriales · acuerdos bilaterales entre regiones','Red de Telecomúnicaciones Europeas-Tecnológicas · internet de alta velocidad'],
+   correct:1,
+   explication:'<strong>RTE-T</strong> — Red Transeuropea de Transporte: infraestructura (autopistas, ferrocarriles, puertos, aeropuertos) que conecta los principales centros económicos europeos. Clave para el mercado interior. Se complementa con el programa <strong>Interreg</strong> de cooperación transfronteriza.'},
+
+  {cat:'ue',theme:'🇪🇺 UE & Territorio',
+   q:'¿Cuántos Estados miembros tiene la UE y qué porcentaje del PIB mundial representa?',
+   hint:'Tras el Brexit · economía global',
+   answers:['25 miembros · 20% del PIB mundial','27 miembros · 30% del PIB mundial','28 miembros · 35% del PIB mundial','30 miembros · 25% del PIB mundial'],
+   correct:1,
+   explication:'La <strong>UE</strong> tiene <strong>27 Estados miembros</strong> (tras el Brexit en 2020) y representa el <strong>30% del PIB mundial</strong>. También concentra el 40% del comercio mundial y 500 millones de habitantes. Es la mayor potencia comercial del mundo.'},
+];
+
+// ── FLASHCARD SYSTEM ──
+// ✅ Correct → card removed from deck
+// ❌ Wrong → card goes back into deck (shuffled in later)
+
+let deck = [];        // cartes restantes
+let wrongCards = [];  // cartes ratées dans ce tour
+let current = 0;
+let good = 0;
+let bad = 0;
+let totalCards = 0;
+let answered = false;
+let activeFilter = 'all';
+
+function setFilter(cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-cat="${cat}"]`).classList.add('active');
+  restartQuiz();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function restartQuiz() {
+  const filtered = activeFilter === 'all' ? allQuestions : allQuestions.filter(q => q.cat === activeFilter);
+  deck = shuffle([...filtered]);
+  wrongCards = [];
+  current = 0;
+  good = 0;
+  bad = 0;
+  totalCards = deck.length;
+  updateScore();
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('quizWrap').style.display = 'block';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  // Si le deck est vide mais il reste des cartes ratées → on les remet
+  if (deck.length === 0 && wrongCards.length > 0) {
+    deck = shuffle([...wrongCards]);
+    wrongCards = [];
+    // Petite info visuelle
+    showRoundInfo();
+    return;
+  }
+  // Tout bon → résultats
+  if (deck.length === 0 && wrongCards.length === 0) {
+    showResults();
+    return;
+  }
+
+  answered = false;
+  const q = deck[0]; // toujours la première carte du deck
+
+  // Counter : cartes restantes
+  const remaining = deck.length + wrongCards.length;
+  document.getElementById('questionCounter').textContent =
+    `${totalCards - remaining + 1} / ${totalCards} · ${remaining} cartas restantes`;
+  document.getElementById('questionTheme').textContent = q.theme;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('questionHint').textContent = q.hint || '';
+
+  const grid = document.getElementById('answersGrid');
+  grid.innerHTML = '';
+  q.answers.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = ans;
+    btn.onclick = () => answer(i, q.correct, q.explication);
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('feedback').classList.remove('visible');
+  document.getElementById('nextBtn').classList.remove('visible');
+  updateProgress();
+}
+
+function showRoundInfo() {
+  // Flash message entre les tours
+  document.getElementById('questionTheme').textContent = '🔄 Nuevo turno';
+  document.getElementById('questionText').textContent =
+    `¡Quedan ${deck.length} cartas por repasar! Las que has fallado vuelven al mazo.`;
+  document.getElementById('questionHint').textContent = '';
+  document.getElementById('answersGrid').innerHTML = '';
+  document.getElementById('feedback').classList.remove('visible');
+
+  const btn = document.getElementById('nextBtn');
+  btn.textContent = '¡Continuar! →';
+  btn.classList.add('visible');
+  btn.onclick = () => {
+    btn.onclick = () => nextQuestion();
+    loadQuestion();
+  };
+}
+
+function answer(chosen, correct, explication) {
+  if (answered) return;
+  answered = true;
+
+  const btns = document.querySelectorAll('.answer-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct');
+    else if (i === chosen && chosen !== correct) btn.classList.add('wrong');
+    else btn.classList.add('reveal');
+  });
+
+  const isCorrect = chosen === correct;
+  const card = deck.shift(); // retire la carte du dessus
+
+  if (isCorrect) {
+    good++;
+    // Carte réussie → elle disparaît du jeu ✅
+  } else {
+    bad++;
+    // Carte ratée → on la remet dans wrongCards ❌
+    wrongCards.push(card);
+  }
+
+  updateScore();
+
+  document.getElementById('feedbackIcon').textContent = isCorrect ? '✅' : '🔄';
+  document.getElementById('feedbackTitle').textContent = isCorrect
+    ? '¡Correcto! Carta eliminada ✅'
+    : 'No exactamente… Vuelve al mazo 🔄';
+  document.getElementById('feedbackTitle').className = 'feedback-title ' + (isCorrect ? 'correct' : 'wrong');
+  document.getElementById('feedbackText').innerHTML = explication;
+  document.getElementById('feedback').classList.add('visible');
+
+  const remaining = deck.length + wrongCards.length;
+  document.getElementById('nextBtn').textContent = remaining > 0 ? 'Siguiente carta →' : 'Ver mis resultados →';
+  document.getElementById('nextBtn').onclick = () => nextQuestion();
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+function nextQuestion() {
+  loadQuestion();
+}
+
+function updateScore() {
+  document.getElementById('scoreGood').textContent = good;
+  document.getElementById('scoreBad').textContent = bad;
+  updateProgress();
+}
+
+function updateProgress() {
+  const done = good; // seules les correctes comptent comme "done"
+  const pct = totalCards > 0 ? (done / totalCards) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  const remaining = deck.length + wrongCards.length;
+  document.getElementById('progressLabel').textContent = `${good} / ${totalCards} dominadas`;
+}
+
+function showResults() {
+  document.getElementById('quizWrap').style.display = 'none';
+  document.getElementById('results').classList.add('visible');
+  const pct = Math.round((good / (good + bad)) * 100);
+  document.getElementById('resultsScore').textContent = '100%';
+  document.getElementById('resultsLabel').textContent =
+    `¡Has dominado las ${totalCards} cartas! (${bad} intentos fallados en total)`;
+  document.getElementById('bdGood').textContent = totalCards;
+  document.getElementById('bdBad').textContent = bad;
+  document.getElementById('bdTotal').textContent = good + bad;
+  let icon, msg;
+  if (bad === 0) { icon = '🏆'; msg = '¡Perfecto! Has dominado todo el vocabulario a la primera. ¡Eres un@ campeón@!'; }
+  else if (bad <= 5) { icon = '⭐'; msg = '¡Excelente! Muy pocos errores, dominas casi perfectamente el vocabulario de Geografía.'; }
+  else if (bad <= 15) { icon = '📚'; msg = '¡Bien hecho! Has acabado el mazo. Repasa los conceptos que te costaron más.'; }
+  else { icon = '💪'; msg = '¡Lo has conseguido! Sigue repasando para memorizar mejor los conceptos.'; }
+  document.getElementById('resultsIcon').textContent = icon;
+  document.getElementById('resultsMsg').textContent = msg;
+}
+
+restartQuiz();
+</script>
+</body>
+</html>

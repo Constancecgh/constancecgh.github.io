@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Fechas · Historia Bachibac · @constance.cgh</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+  :root {
+    --bg: #0F1923; --surface: #162030; --accent: #2D6A4F; --accent-d: #1B4332;
+    --gold: #C9A84C; --cream: #FCE8DF; --white: #F0F4F8; --light: #7A90A8;
+    --border: rgba(255,255,255,0.08); --green: #27AE60; --red: #E74C3C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--white); min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: var(--accent-d); border-bottom: 3px solid var(--gold); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+  .header-left h1 { font-size: 13px; font-weight: 700; letter-spacing: 1.5px; }
+  .header-left p { font-size: 10px; font-weight: 300; color: var(--cream); margin-top: 1px; }
+  .header-tag { background: rgba(255,255,255,0.12); color: var(--cream); font-size: 9px; font-weight: 600; padding: 4px 12px; border-radius: 20px; letter-spacing: 1px; }
+  .score-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 24px; display: flex; align-items: center; gap: 20px; }
+  .score-item { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 500; }
+  .score-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .score-val { font-size: 16px; font-weight: 700; }
+  .progress-wrap { flex: 1; height: 6px; background: rgba(255,255,255,0.08); border-radius: 3px; overflow: hidden; }
+  .progress-bar { height: 100%; background: var(--gold); border-radius: 3px; transition: width 0.4s; }
+  .progress-label { font-size: 10px; color: var(--light); white-space: nowrap; }
+  .filters { background: var(--surface); padding: 8px 24px; display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--border); align-items: center; }
+  .filter-label { font-size: 9px; color: var(--light); font-weight: 600; letter-spacing: 1px; margin-right: 4px; }
+  .filter-btn { background: rgba(255,255,255,0.06); color: var(--light); border: 1px solid rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 20px; font-size: 10px; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: 'Poppins', sans-serif; }
+  .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: 600; }
+  main { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; }
+  .quiz-wrap { width: 100%; max-width: 560px; }
+  .question-counter { font-size: 10px; color: var(--light); letter-spacing: 1px; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
+  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 16px; text-align: center; position: relative; overflow: hidden; }
+  .question-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--gold); }
+  .question-theme { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+  .question-text { font-size: 17px; font-weight: 600; color: var(--white); line-height: 1.4; margin-bottom: 8px; }
+  .question-hint { font-size: 11px; color: var(--light); line-height: 1.5; }
+  .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .answer-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 12px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; color: var(--white); cursor: pointer; transition: all 0.2s; text-align: center; line-height: 1.3; }
+  .answer-btn:hover:not(:disabled) { background: rgba(255,255,255,0.08); border-color: var(--gold); transform: translateY(-2px); }
+  .answer-btn.correct { background: rgba(39,174,96,0.2); border-color: var(--green); color: var(--green); }
+  .answer-btn.wrong { background: rgba(231,76,60,0.2); border-color: var(--red); color: var(--red); }
+  .answer-btn.reveal { background: rgba(39,174,96,0.08); border-color: rgba(39,174,96,0.2); color: rgba(39,174,96,0.6); }
+  .answer-btn:disabled { cursor: default; transform: none; }
+  .feedback { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 14px; display: none; animation: fadeIn 0.3s ease; }
+  .feedback.visible { display: block; }
+  .feedback-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .feedback-icon { font-size: 20px; }
+  .feedback-title { font-size: 14px; font-weight: 700; }
+  .feedback-title.correct { color: var(--green); }
+  .feedback-title.wrong { color: var(--red); }
+  .feedback-text { font-size: 11px; color: var(--light); line-height: 1.6; }
+  .feedback-text strong { color: var(--white); }
+  .next-btn { width: 100%; padding: 14px; background: var(--accent); color: white; border: none; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: none; letter-spacing: 0.5px; }
+  .next-btn:hover { background: var(--accent-d); transform: translateY(-1px); }
+  .next-btn.visible { display: block; }
+  .results { width: 100%; max-width: 500px; text-align: center; display: none; }
+  .results.visible { display: block; }
+  .results-icon { font-size: 48px; margin-bottom: 16px; }
+  .results-score { font-size: 52px; font-weight: 700; color: var(--gold); line-height: 1; margin-bottom: 6px; }
+  .results-label { font-size: 12px; color: var(--light); margin-bottom: 24px; }
+  .results-msg { font-size: 15px; color: var(--white); line-height: 1.6; margin-bottom: 28px; }
+  .results-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .results-btn { padding: 12px 24px; border-radius: 25px; font-family: 'Poppins', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
+  .results-btn.primary { background: var(--accent); color: white; }
+  .results-btn.primary:hover { background: var(--accent-d); }
+  .results-btn.secondary { background: rgba(255,255,255,0.08); color: var(--white); border: 1px solid var(--border); }
+  .results-breakdown { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 24px; }
+  .breakdown-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .breakdown-val { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .breakdown-lbl { font-size: 9px; color: var(--light); letter-spacing: 1px; text-transform: uppercase; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  footer { background: var(--accent-d); color: var(--cream); font-size: 10px; text-align: center; padding: 10px; border-top: 2px solid var(--gold); }
+
+  .back-home:hover {
+    background: rgba(212,168,83,0.15);
+    border-color: #D4A853;
+    color: #D4A853;
+  }
+</style>
+</head>
+<body>
+
+
+<header>
+  <div class="header-left">
+    <h1>✦ QUIZ FECHAS · HISTORIA BACHIBAC</h1>
+    <p>Pon a prueba tus conocimientos sobre las fechas clave · Haz clic en la respuesta correcta</p>
+  </div>
+  <div class="header-tag">TERMINALE BACHIBAC</div>
+</header>
+
+<div class="score-bar">
+  <div class="score-item">
+    <div class="score-dot" style="background:var(--green)"></div>
+    <span style="color:var(--light);font-size:10px">Dominadas ✅</span>
+    <span class="score-val" style="color:var(--green)" id="scoreGood">0</span>
+  </div>
+  <div class="score-item">
+    <div class="score-dot" style="background:var(--red)"></div>
+    <span style="color:var(--light);font-size:10px">Al mazo 🔄</span>
+    <span class="score-val" style="color:var(--red)" id="scoreBad">0</span>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 0</div>
+</div>
+
+<div class="filters">
+  <span class="filter-label">TEMA :</span>
+  <button class="filter-btn active" data-cat="all" onclick="setFilter('all')">🌍 Todo</button>
+  <button class="filter-btn" data-cat="sgm" onclick="setFilter('sgm')">⚔️ 2ª GM</button>
+  <button class="filter-btn" data-cat="gf" onclick="setFilter('gf')">🧱 Guerra Fría</button>
+  <button class="filter-btn" data-cat="es" onclick="setFilter('es')">🇪🇸 España</button>
+  <button class="filter-btn" data-cat="fr" onclick="setFilter('fr')">🇫🇷 Francia</button>
+  <button class="filter-btn" data-cat="eu" onclick="setFilter('eu')">🇪🇺 Europa</button>
+  <button class="filter-btn" data-cat="monde" onclick="setFilter('monde')">🌐 Mundo</button>
+</div>
+
+<main>
+  <div class="quiz-wrap" id="quizWrap">
+    <div class="question-counter" id="questionCounter">Pregunta 1 / 65</div>
+    <div class="question-card">
+      <div class="question-theme" id="questionTheme"></div>
+      <div class="question-text" id="questionText"></div>
+      <div class="question-hint" id="questionHint"></div>
+    </div>
+    <div class="answers" id="answersGrid"></div>
+    <div class="feedback" id="feedback">
+      <div class="feedback-top">
+        <span class="feedback-icon" id="feedbackIcon"></span>
+        <span class="feedback-title" id="feedbackTitle"></span>
+      </div>
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Siguiente pregunta →</button>
+  </div>
+
+  <div class="results" id="results">
+    <div class="results-icon" id="resultsIcon"></div>
+    <div class="results-score" id="resultsScore"></div>
+    <div class="results-label" id="resultsLabel"></div>
+    <div class="results-breakdown">
+      <div class="breakdown-card"><div class="breakdown-val" style="color:var(--green)" id="bdGood">0</div><div class="breakdown-lbl">Correctas</div></div>
+      <div class="breakdown-card"><div class="breakdown-val" style="color:var(--red)" id="bdBad">0</div><div class="breakdown-lbl">Incorrectas</div></div>
+      <div class="breakdown-card"><div class="breakdown-val" style="color:var(--gold)" id="bdTotal">0</div><div class="breakdown-lbl">Preguntas</div></div>
+    </div>
+    <div class="results-msg" id="resultsMsg"></div>
+    <div class="results-actions">
+      <button class="results-btn primary" onclick="restartQuiz()">🔄 Empezar de nuevo</button>
+      <button class="results-btn secondary" onclick="setFilter('all');restartQuiz()">🌍 Repasar todo</button>
+    </div>
+  </div>
+</main>
+
+<footer>BACHIBAC · HISTORIA · QUIZ FECHAS &nbsp;·&nbsp; © Constance | @constance.cgh</footer>
+
+<script>
+const allQuestions = [
+  // ENTREGUERRAS
+  {cat:'monde',theme:'🌐 Entreguerras',q:'¿En qué año se firma el Tratado de Versalles, humillando a Alemania?',hint:'Germen del nazismo · deudas enormes · pérdida de territorios',answers:['1917','1918','1919','1920'],correct:2,explication:'<strong>1919</strong> — El Tratado de Versalles humilla a Alemania: pérdida de territorios, ejército limitado, enormes deudas. Germen del nazismo y del ascenso de Hitler.'},
+  {cat:'monde',theme:'🌐 Entreguerras',q:'¿En qué año ocurre el crack bursátil de Wall Street y comienza la Gran Depresión?',hint:'Mayor crisis económica del siglo XX · auge del totalitarismo',answers:['1927','1928','1929','1930'],correct:2,explication:'<strong>1929</strong> — El crack de Wall Street desencadena la Gran Depresión mundial. El desempleo masivo favorece el ascenso del totalitarismo en Europa.'},
+  {cat:'monde',theme:'🌐 Entreguerras',q:'¿En qué año Hitler se convierte en canciller de Alemania?',hint:'Inicio del régimen nazi · partido único NSDAP',answers:['1931','1932','1933','1934'],correct:2,explication:'<strong>1933</strong> — Hitler nombrado canciller el 30 de enero. Instauración del régimen nazi: partido único, censura, propaganda, persecución de judíos y oponentes.'},
+
+  // 2ª GUERRA MUNDIAL
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿En qué año invade Alemania Polonia, iniciando la 2ª GM?',hint:'Blitzkrieg — guerra relámpago · 1 de septiembre',answers:['1937','1938','1939','1940'],correct:2,explication:'<strong>01/09/1939</strong> — Alemania invade Polonia con la Blitzkrieg. Francia y Reino Unido declaran la guerra el 3 de septiembre.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo se firma el armisticio de Compiègne y nace el régimen de Vichy?',hint:'Francia dividida en zona ocupada (norte) y zona libre (sur)',answers:['10/05/1940','22/06/1940','18/06/1940','25/08/1940'],correct:1,explication:'<strong>22/06/1940</strong> — Armisticio Francia-Alemania. Pétain crea el régimen de Vichy y colabora con los nazis. Fin de la III República.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo lanza De Gaulle su llamamiento desde Londres?',hint:'"La llama de la resistencia francesa no debe apagarse"',answers:['10/06/1940','18/06/1940','22/06/1940','25/08/1940'],correct:1,explication:'<strong>18/06/1940</strong> — De Gaulle llama a los franceses a resistir desde Londres. Nacen las Fuerzas Francesas Libres (FFL).'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo tiene lugar la Operación Barbarroja — invasión alemana de la URSS?',hint:'Mayor invasión terrestre de la Historia · grave error estratégico de Hitler',answers:['Jun. 1940','Jun. 1941','Jun. 1942','Jun. 1943'],correct:1,explication:'<strong>Junio 1941</strong> — Hitler rompe el pacto con Stalin e invade la URSS con 3 millones de soldados. Conduce a la Batalla de Stalingrado (1943).'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo ataca Japón Pearl Harbor y entran en guerra los EE.UU.?',hint:'Los EE.UU. pasan de la neutralidad a la guerra total',answers:['07/12/1940','07/12/1941','07/12/1942','06/06/1944'],correct:1,explication:'<strong>07/12/1941</strong> — Japón ataca Pearl Harbor. EE.UU. entra en guerra al día siguiente, reforzando considerablemente el campo aliado.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿En qué año tiene lugar la Conferencia de Wannsee sobre la "Solución Final"?',hint:'Organización industrial del exterminio de los judíos',answers:['1941','1942','1943','1944'],correct:1,explication:'<strong>Enero 1942</strong> — La Conferencia de Wannsee planifica la "Endlösung". 6 millones de judíos serán exterminados en la Shoa.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo ocurre la Batalla de Stalingrado, punto de inflexión de la guerra?',hint:'Gran derrota alemana en el frente oriental · la URSS pasa a la ofensiva',answers:['Verano 1942','Feb. 1943','Jun. 1944','Ene. 1945'],correct:1,explication:'<strong>Febrero 1943</strong> — Capitulación del VI Ejército alemán en Stalingrado. Punto de inflexión decisivo: Alemania no recuperará la iniciativa.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuál es la fecha del Desembarco de Normandía (Día D)?',hint:'La mayor operación anfibia de la Historia',answers:['06/06/1943','06/06/1944','25/08/1944','08/05/1945'],correct:1,explication:'<strong>06/06/1944</strong> — Operación Overlord. 156.000 soldados aliados desembarcan en Normandía. Se abre un segundo frente al Oeste.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo se libera París?',hint:'"La Nueve" — compañía de republicanos españoles entre los primeros en entrar',answers:['06/06/1944','15/08/1944','25/08/1944','08/05/1945'],correct:2,explication:'<strong>25/08/1944</strong> — Liberación de París. "La Nueve", compañía de exiliados españoles, entra entre los primeros. De Gaulle desfila por los Campos Elíseos.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo capitula Alemania?',hint:'Fin de la guerra en Europa · suicidio de Hitler el 30 de abril',answers:['30/04/1945','08/05/1945','06/08/1945','02/09/1945'],correct:1,explication:'<strong>08/05/1945</strong> — Capitulación alemana. Hitler se había suicidado el 30 de abril. Los Aliados proclaman la Victoria en Europa.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo se lanzan las bombas atómicas sobre Japón?',hint:'Hiroshima y Nagasaki · fin de la 2ª GM',answers:['Ago. 1944','Ago. 1945','Sep. 1945','May. 1945'],correct:1,explication:'<strong>6 y 9 agosto 1945</strong> — Bombas atómicas sobre Hiroshima y Nagasaki. Japón capitula el 02/09/1945. Fin oficial de la 2ª Guerra Mundial.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿En qué año se crean la ONU y tienen lugar los Juicios de Núremberg?',hint:'Primeros juicios por crímenes contra la humanidad',answers:['1944','1945','1946','1947'],correct:1,explication:'<strong>1945</strong> — Creación de la ONU (26 junio). Juicios de Núremberg (1945-46): primeros juicios internacionales por crímenes contra la humanidad.'},
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿Cuándo tiene lugar la rafle del Vel d\'Hiv en París?',hint:'Redada de judíos realizada por la policía francesa bajo Vichy',answers:['1941','1942','1943','1944'],correct:1,explication:'<strong>Julio 1942</strong> — La policía francesa detiene a 13.000 judíos parisinos bajo el régimen de Vichy. Símbolo de la colaboración francesa con el nazismo.'},
+
+  // GUERRA FRÍA
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué año el Plan Marshall y la Doctrina Truman marcan el inicio de la Guerra Fría?',hint:'EE.UU. ayuda a Europa Occidental · "contención" del comunismo',answers:['1945','1946','1947','1948'],correct:2,explication:'<strong>1947</strong> — Plan Marshall (ayuda económica de EE.UU.) y Doctrina Truman (contención del comunismo): inicio oficial de la Guerra Fría.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿Cuándo tiene lugar el Bloqueo de Berlín por la URSS?',hint:'EE.UU. responde con un puente aéreo histórico',answers:['1947-48','1948-49','1949-50','1950-51'],correct:1,explication:'<strong>1948-1949</strong> — La URSS bloquea Berlín occidental. EE.UU. organiza un puente aéreo: 277.000 vuelos en 11 meses. La URSS levanta el bloqueo en mayo de 1949.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿Cuándo se funda la OTAN?',hint:'Alianza militar occidental liderada por EE.UU.',answers:['1947','1948','1949','1950'],correct:2,explication:'<strong>1949</strong> — Creación de la OTAN. La URSS responde con el Pacto de Varsovia en 1955. Francia abandona el mando integrado en 1966 (De Gaulle).'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué años tiene lugar la Guerra de Corea?',hint:'Primer conflicto armado de la Guerra Fría · paralelo 38',answers:['1948-1950','1950-1953','1953-1956','1950-1955'],correct:1,explication:'<strong>1950-1953</strong> — Corea del Norte invade el Sur. EE.UU. interviene bajo bandera ONU. Armisticio de Panmunjom: el paralelo 38 permanece como frontera.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué año se firma el Pacto de Varsovia?',hint:'Respuesta al OTAN · alianza militar del bloque soviético',answers:['1949','1952','1955','1957'],correct:2,explication:'<strong>1955</strong> — El Pacto de Varsovia es la respuesta soviética a la OTAN. Agrupa a los países del bloque oriental bajo liderazgo de la URSS. También en 1955: Conferencia de Bandung.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué año tiene lugar la Conferencia de Bandung y nace el Movimiento de No Alineados?',hint:'Tercer Mundo · rechazo de ambos bloques',answers:['1953','1954','1955','1956'],correct:2,explication:'<strong>1955</strong> — Conferencia de Bandung: nacimiento del Movimiento de Países No Alineados. Los países del Tercer Mundo rechazan pertenecer a ningún bloque.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué año se construye el Muro de Berlín?',hint:'Símbolo del Telón de Acero · Gagarin también en este año',answers:['1958','1960','1961','1962'],correct:2,explication:'<strong>1961</strong> — El Muro de Berlín se construye para frenar la huida de alemanes del Este al Oeste. También en 1961: Gagarin, primer hombre en el espacio.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿Cuándo ocurre la Crisis de los misiles de Cuba?',hint:'El mundo al borde del conflicto nuclear — 13 días de tensión',answers:['1960','1961','1962','1963'],correct:2,explication:'<strong>Octubre 1962</strong> — Kennedy y Jrushchov al borde de la guerra nuclear. La URSS retira sus misiles de Cuba. Se crea el "teléfono rojo" Moscú-Washington.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué años tiene lugar la Guerra de Vietnam con intervención de EE.UU.?',hint:'Derrota humillante de EE.UU. · guerra indirecta de la Guerra Fría',answers:['1960-1970','1962-1971','1964-1973','1966-1975'],correct:2,explication:'<strong>1964-1973</strong> — EE.UU. interviene en Vietnam del Sur contra el Norte comunista. Retirada americana en 1973 → derrota humillante.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué año tiene lugar la Primavera de Praga?',hint:'Checoslovaquia intenta liberalizarse · intervención soviética',answers:['1966','1967','1968','1969'],correct:2,explication:'<strong>1968</strong> — Primavera de Praga: Checoslovaquia intenta un "socialismo con rostro humano". La URSS interviene militarmente para sofocar la revuelta.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿Cuándo tiene lugar la Revolución islámica en Irán?',hint:'2ª crisis del petróleo · Jomeini derroca al Sha',answers:['1977','1978','1979','1980'],correct:2,explication:'<strong>1979</strong> — Jomeini derroca al Sha y proclama la República Islámica. 2ª crisis del petróleo. También en 1979: invasión soviética de Afganistán.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿Cuándo cae el Muro de Berlín?',hint:'Fin del mundo bipolar · manifestaciones masivas en la RDA',answers:['09/11/1987','09/11/1988','09/11/1989','09/11/1991'],correct:2,explication:'<strong>09/11/1989</strong> — La caída del Muro de Berlín marca el fin de la Guerra Fría. Reunificación alemana en 1990. Símbolo del colapso del bloque soviético.'},
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿Cuándo se disuelve la URSS?',hint:'EE.UU. se convierte en la única superpotencia mundial · Gorbachov',answers:['1989','1990','1991','1992'],correct:2,explication:'<strong>25/12/1991</strong> — Gorbachov disuelve oficialmente la URSS. Fin de la Guerra Fría. EE.UU. queda como única superpotencia mundial.'},
+
+  // ESPAÑA
+  {cat:'es',theme:'🇪🇸 España',q:'¿Cuándo comienza la Guerra Civil española?',hint:'Sublevación militar del general Franco contra la República',answers:['1934','1935','1936','1937'],correct:2,explication:'<strong>18/07/1936</strong> — Sublevación militar de Franco. Intervención extranjera: nazis y fascistas apoyan a Franco; la URSS apoya a la República. Victoria de Franco en 1939.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿En qué año España ingresa en la ONU durante el franquismo?',hint:'Fin del aislamiento internacional · apoyo de EE.UU. por anticomunismo',answers:['1953','1954','1955','1956'],correct:2,explication:'<strong>1955</strong> — España ingresa en la ONU. Fin del aislamiento internacional del franquismo. EE.UU. apoya a Franco por su anticomunismo durante la Guerra Fría.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿En qué año muere el almirante Carrero Blanco en un atentado de ETA?',hint:'Número dos del franquismo · colapso del régimen',answers:['1971','1972','1973','1974'],correct:2,explication:'<strong>1973</strong> — ETA asesina al almirante Carrero Blanco, sucesor designado de Franco. Golpe devastador para el régimen en sus últimos años.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿Cuándo muere Franco, iniciando la Transición democrática?',hint:'Tras 36 años de dictadura · Juan Carlos I proclamado rey',answers:['20/11/1973','20/11/1974','20/11/1975','20/11/1976'],correct:2,explication:'<strong>20/11/1975</strong> — Muerte de Franco. Juan Carlos I es proclamado rey y apuesta por la democracia. Inicio de la Transición española.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿En qué año se celebran las primeras elecciones democráticas en España desde 1936?',hint:'Adolfo Suárez (UCD) · legalización de partidos políticos',answers:['1975','1976','1977','1978'],correct:2,explication:'<strong>1977</strong> — Primeras elecciones democráticas desde 1936. Adolfo Suárez (UCD) gana. Marca el inicio de la democracia española moderna.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿En qué año se aprueba la Constitución española?',hint:'Monarquía parlamentaria · 17 comunidades autónomas',answers:['1976','1977','1978','1979'],correct:2,explication:'<strong>1978</strong> — La Constitución española establece una monarquía parlamentaria y un Estado de las Autonomías. Aprobada por referéndum con el 87,8%.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿Cuál es la fecha del golpe de Estado de Tejero (23-F)?',hint:'Intento de golpe en el Congreso · fracaso gracias a Juan Carlos I',answers:['23/02/1979','23/02/1980','23/02/1981','23/02/1982'],correct:2,explication:'<strong>23/02/1981</strong> — Tejero irrumpe en el Congreso. Juan Carlos I rechaza el golpe en televisión. Fracaso total → consolida la democracia española.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿Cuándo gana el PSOE de Felipe González, consolidando la democracia española?',hint:'4 mandatos consecutivos · modernización económica',answers:['1979','1980','1981','1982'],correct:3,explication:'<strong>1982</strong> — El PSOE gana con mayoría absoluta. Felipe González: 4 mandatos. España entra en la OTAN (1982) y en la CEE (1986).'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿En qué año ingresa España en la CEE?',hint:'Vuelta de España a Europa tras el franquismo · 3ª ampliación',answers:['1982','1984','1986','1988'],correct:2,explication:'<strong>1986</strong> — España y Portugal ingresan en la CEE. España moderniza su economía gracias a los fondos estructurales europeos.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿Cuándo tienen lugar los JJ.OO. de Barcelona y la Expo de Sevilla?',hint:'España proyecta imagen de país moderno y democrático',answers:['1990','1991','1992','1993'],correct:2,explication:'<strong>1992</strong> — JJ.OO. de Barcelona y Expo de Sevilla: año cumbre de la España democrática. Consolidación de la imagen internacional de España.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿En qué año España adopta el euro y desaparece la peseta?',hint:'Adopción en 1999 · pero desaparición física en...',answers:['1999','2000','2001','2002'],correct:3,explication:'<strong>2002</strong> — La peseta desaparece físicamente. España había adoptado el euro en <strong>1999</strong>, junto con otros 11 países de la zona euro.'},
+  {cat:'es',theme:'🇪🇸 España',q:'¿Cuándo ocurren los atentados del 11-M en Madrid?',hint:'193 muertos · mayor atentado terrorista en la historia de España',answers:['11/03/2001','11/03/2003','11/03/2004','11/03/2005'],correct:2,explication:'<strong>11/03/2004</strong> — 193 muertos en 4 trenes de cercanías. Atentado islamista (Al Qaeda). El gobierno Aznar culpa a ETA → el PSOE gana las elecciones 3 días después.'},
+
+  // FRANCIA
+  {cat:'fr',theme:'🇫🇷 Francia',q:'¿Cuándo tiene lugar la derrota francesa en Dien Bien Phu, perdiendo Indochina?',hint:'Francia pierde su colonia → independencia de Vietnam, Laos, Camboya',answers:['1952','1953','1954','1955'],correct:2,explication:'<strong>1954</strong> — Derrota francesa en Dien Bien Phu → independencia de Indochina. El mismo año comienza la guerra de independencia de Argelia (Toussaint Rouge).'},
+  {cat:'fr',theme:'🇫🇷 Francia',q:'¿En qué año De Gaulle funda la V República francesa?',hint:'Crisis argelina → nueva Constitución que refuerza el ejecutivo',answers:['1956','1957','1958','1959'],correct:2,explication:'<strong>1958</strong> — La crisis argelina provoca la caída de la IV República. De Gaulle funda la V República. La elección presidencial pasa a sufragio universal directo en 1962.'},
+  {cat:'fr',theme:'🇫🇷 Francia',q:'¿En qué año obtiene Argelia su independencia?',hint:'Acuerdos de Evian · 8 años de guerra · éxodo de 800.000 Pieds-Noirs',answers:['1960','1961','1962','1963'],correct:2,explication:'<strong>1962</strong> — Acuerdos de Evian: independencia de Argelia tras 8 años de guerra y 275.000 muertos. Éxodo de 800.000 Pieds-Noirs hacia Francia.'},
+  {cat:'fr',theme:'🇫🇷 Francia',q:'¿En qué año Francia abandona el mando integrado de la OTAN?',hint:'"Una cierta idea de Francia" · soberanía nacional · De Gaulle',answers:['1963','1964','1966','1968'],correct:2,explication:'<strong>1966</strong> — De Gaulle retira a Francia del mando integrado de la OTAN para afirmar la soberanía nacional. Francia mantiene su disuasión nuclear independiente.'},
+  {cat:'fr',theme:'🇫🇷 Francia',q:'¿Cuándo tienen lugar las protestas de Mayo del 68 en Francia?',hint:'Protestas estudiantiles → huelga general · 10 millones de huelguistas',answers:['1966','1967','1968','1969'],correct:2,explication:'<strong>Mayo 1968</strong> — Crisis estudiantil → 10 millones de huelguistas. Transformación social profunda. De Gaulle se va en 1969.'},
+  {cat:'fr',theme:'🇫🇷 Francia',q:'¿En qué año se aprueba la Ley Veil sobre el aborto en Francia?',hint:'Hito de la emancipación de las mujeres · Giscard d\'Estaing',answers:['1973','1974','1975','1976'],correct:2,explication:'<strong>1975</strong> — La Ley Veil legaliza el aborto en Francia. Símbolo de la emancipación de las mujeres y de la modernización social bajo Giscard d\'Estaing.'},
+  {cat:'fr',theme:'🇫🇷 Francia',q:'¿En qué año Mitterrand se convierte en el primer presidente socialista de la V República?',hint:'Abolición de la pena de muerte · 2 mandatos de 7 años',answers:['1978','1979','1981','1983'],correct:2,explication:'<strong>1981</strong> — Mitterrand elegido presidente. Abolición de la pena de muerte, nacionalizaciones, 5ª semana de vacaciones pagadas. 2 mandatos (1981-1995).'},
+  {cat:'fr',theme:'🇫🇷 Francia',q:'¿En qué año se celebran las primeras elecciones europeas por sufragio universal directo?',hint:'Los ciudadanos europeos eligen directamente a sus eurodiputados',answers:['1975','1977','1979','1981'],correct:2,explication:'<strong>1979</strong> — Primeras elecciones al Parlamento Europeo por sufragio universal directo. Hito importante en la construcción de la democracia europea.'},
+
+  // EUROPA
+  {cat:'eu',theme:'🇪🇺 Europa',q:'¿En qué año se crea la CECA, primer paso hacia la integración europea?',hint:'Carbón y acero · reconciliación franco-alemana · 6 países fundadores',answers:['1948','1950','1951','1952'],correct:2,explication:'<strong>1951</strong> — La CECA (Comunidad Europea del Carbón y del Acero) es el primer paso hacia Europa. Objetivo: hacer imposible una nueva guerra entre Francia y Alemania.'},
+  {cat:'eu',theme:'🇪🇺 Europa',q:'¿En qué año se firman los Tratados de Roma, creando la CEE?',hint:'Nacimiento del Mercado Común europeo · 6 países fundadores',answers:['1951','1955','1957','1960'],correct:2,explication:'<strong>1957</strong> — Los Tratados de Roma crean la CEE (Comunidad Económica Europea) y el EURATOM. Mercado común entre los 6 países fundadores.'},
+  {cat:'eu',theme:'🇪🇺 Europa',q:'¿En qué año se produce la 1ª ampliación de la CEE, con la adhesión de Reino Unido, Dinamarca e Irlanda?',hint:'De 6 a 9 miembros',answers:['1971','1972','1973','1974'],correct:2,explication:'<strong>1973</strong> — 1ª ampliación de la CEE: adhesión de Reino Unido, Dinamarca e Irlanda. La CEE pasa de 6 a 9 miembros.'},
+
+  {cat:'eu',theme:'🇪🇺 Europa',q:'¿En qué año el Tratado de Maastricht crea la Unión Europea?',hint:'Ciudadanía europea · euro · PESC · de CEE a UE',answers:['1990','1991','1992','1993'],correct:2,explication:'<strong>1992</strong> — El Tratado de Maastricht crea la Unión Europea, la ciudadanía europea y prepara la moneda única. El euro es adoptado en 1999.'},
+  {cat:'eu',theme:'🇪🇺 Europa',q:'¿En qué año entra en vigor el Espacio Schengen de libre circulación?',hint:'Fin de los controles fronterizos entre países miembros',answers:['1992','1993','1995','1997'],correct:2,explication:'<strong>1995</strong> — El Espacio Schengen entra en vigor: libre circulación de personas sin controles fronterizos entre los países miembros.'},
+  {cat:'eu',theme:'🇪🇺 Europa',q:'¿Cuándo vota el Reino Unido a favor del Brexit?',hint:'52% a favor de la salida · mayor crisis del proyecto europeo',answers:['2014','2015','2016','2017'],correct:2,explication:'<strong>2016</strong> — El referéndum británico da 52% a favor del Brexit. Mayor crisis en la historia del proyecto europeo. Salida efectiva en 2020.'},
+
+  // MUNDO CONTEMPORÁNEO
+  {cat:'monde',theme:'🌐 Mundo',q:'¿En qué año tiene lugar la 1ª crisis del petróleo?',hint:'Guerra del Yom Kipur · embargo de la OPEP · fin de los Treinta Gloriosos',answers:['1971','1972','1973','1974'],correct:2,explication:'<strong>1973</strong> — Guerra del Yom Kipur → embargo de la OPEP → cuadruplicación del precio del petróleo. Estanflación. Fin de los Treinta Gloriosos (1945-1973).'},
+  {cat:'monde',theme:'🌐 Mundo',q:'¿En qué año las reformas de Deng Xiaoping transforman la economía china?',hint:'"4 modernizaciones" · Zonas Económicas Especiales · Shenzhen',answers:['1976','1977','1978','1979'],correct:2,explication:'<strong>1978</strong> — Reformas de Deng Xiaoping: "4 modernizaciones", economía socialista de mercado, ZEE (Shenzhen). China pasa a ser la 2ª economía mundial.'},
+  {cat:'monde',theme:'🌐 Mundo',q:'¿Cuándo ocurren los atentados del 11-S en Nueva York?',hint:'Al Qaeda · "Guerra contra el terrorismo" · Torres Gemelas',answers:['11/09/2000','11/09/2001','11/09/2002','11/09/2003'],correct:1,explication:'<strong>11/09/2001</strong> — Atentados de Al Qaeda contra las Torres Gemelas y el Pentágono. 2.977 muertos. EE.UU. invade Afganistán (2001) e Irak (2003).'},
+  {cat:'monde',theme:'🌐 Mundo',q:'¿En qué año tiene lugar el genocidio de Ruanda?',hint:'800.000 tutsis asesinados en 100 días · fracaso de la comunidad internacional',answers:['1992','1993','1994','1995'],correct:2,explication:'<strong>1994</strong> — Genocidio de Ruanda: el gobierno hutu masacra a 800.000 tutsis en 100 días. Fracaso de la comunidad internacional para intervenir.'},
+  {cat:'monde',theme:'🌐 Mundo',q:'¿Cuándo estalla la crisis financiera mundial?',hint:'Burbuja inmobiliaria en EE.UU. · quiebra de Lehman Brothers',answers:['2006','2007','2008','2009'],correct:2,explication:'<strong>2008</strong> — La burbuja inmobiliaria estadounidense estalla. Quiebra de Lehman Brothers. Mayor crisis financiera desde 1929. Austeridad en Europa.'},
+  {cat:'monde',theme:'🌐 Mundo',q:'¿En qué año tienen lugar los atentados de París (130 muertos)?',hint:'Daesh · múltiples ataques simultáneos en la capital francesa',answers:['2013','2014','2015','2016'],correct:2,explication:'<strong>2015</strong> — Atentados de París: 130 muertos en el Bataclan y otros lugares. Reivindicados por Daesh. Francia declara el estado de emergencia.'},
+
+  // MANQUANTES
+  {cat:'sgm',theme:'⚔️ 2ª Guerra Mundial',q:'¿En qué año tienen lugar las batallas de Midway y El-Alamein?',hint:'Midway frena a Japón · El-Alamein frena a Alemania en África',answers:['1941','1942','1943','1944'],correct:1,explication:'<strong>1942</strong> — Batalla de Midway (junio): EE.UU. frena la expansión japonesa en el Pacífico. Batalla de El-Alamein (octubre): derrota del Afrika Korps alemán en Egipto.'},
+
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿Cuándo tiene lugar el lanzamiento del Sputnik por la URSS?',hint:'Primer satélite artificial · victoria soviética en la carrera espacial',answers:['1955','1956','1957','1958'],correct:2,explication:'<strong>1957</strong> — La URSS lanza el Sputnik, primer satélite artificial de la Historia. Victoria soviética en la carrera espacial. Ese mismo año se firman los Tratados de Roma.'},
+
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué año llega el primer hombre estadounidense a la Luna?',hint:'Misión Apollo 11 · "Un pequeño paso para el hombre…"',answers:['1967','1968','1969','1970'],correct:2,explication:'<strong>1969</strong> — Apollo 11: Neil Armstrong es el primer hombre en pisar la Luna. Victoria de EE.UU. en la carrera espacial frente a la URSS.'},
+
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿Cuándo se produce la invasión soviética de Afganistán?',hint:'Nuevo frente de la Guerra Fría · respuesta de EE.UU.: boicot JJ.OO. Moscú',answers:['1977','1978','1979','1980'],correct:2,explication:'<strong>1979</strong> — La URSS invade Afganistán. EE.UU. boicotea los JJ.OO. de Moscú 1980. La guerra dura hasta 1989 y debilita considerablemente a la URSS.'},
+
+  {cat:'gf',theme:'🧱 Guerra Fría',q:'¿En qué año tiene lugar la Guerra del Golfo Pérsico?',hint:'Irak invade Kuwait · coalición internacional liderada por EE.UU.',answers:['1989','1990','1991','1992'],correct:2,explication:'<strong>1991</strong> — Irak invade Kuwait (1990) → coalición internacional bajo liderazgo de EE.UU. libera Kuwait. Se produce el mismo año que la disolución de la URSS.'},
+
+  {cat:'monde',theme:'🌐 Mundo',q:'¿En qué año obtiene India su independencia?',hint:'Fin del Imperio Británico · Gandhi · primer acto de descolonización',answers:['1945','1946','1947','1948'],correct:2,explication:'<strong>1947</strong> — India obtiene su independencia del Imperio Británico. Primer gran acto de descolonización, mismo año que el Plan Marshall e inicio de la Guerra Fría.'},
+
+  {cat:'eu',theme:'🇪🇺 Europa',q:'¿En qué año entra en vigor el Acta Única Europea?',hint:'Refuerzo del mercado interior europeo · misma año que España entra en la CEE',answers:['1984','1985','1986','1987'],correct:2,explication:'<strong>1986</strong> — El Acta Única Europea refuerza el mercado interior y prepara la moneda única. El mismo año España y Portugal ingresan en la CEE.'},
+
+  {cat:'eu',theme:'🇪🇺 Europa',q:'¿En qué año Kosovo proclama su independencia y la UE amplía a 25 miembros?',hint:'2 eventos europeos importantes en los mismos años',answers:['1999 y 2004','2000 y 2005','1999 y 2003','2001 y 2004'],correct:0,explication:'<strong>1999</strong> — Conflicto de Kosovo. <strong>2004</strong> — Gran ampliación de la UE: 10 nuevos miembros (países del Este principalmente), pasando de 15 a 25 Estados miembros.'},
+
+  {cat:'monde',theme:'🌐 Mundo',q:'¿En qué año Obama se convierte en el primer presidente afroamericano de EE.UU.?',hint:'Crisis financiera del mismo año · cambio histórico en EE.UU.',answers:['2006','2007','2008','2009'],correct:2,explication:'<strong>2008</strong> — Barack Obama elegido primer presidente afroamericano de EE.UU. El mismo año estalla la crisis financiera mundial con la quiebra de Lehman Brothers.'},
+
+  {cat:'monde',theme:'🌐 Mundo',q:'¿En qué año tienen lugar las Primaveras Árabes?',hint:'Movimientos de protesta en países árabes por democracia y derechos · crisis de deuda griega',answers:['2009','2010','2011','2012'],correct:1,explication:'<strong>2010</strong> — Las Primaveras Árabes comienzan en Túnez y se extienden a Egipto, Libia, Siria... El mismo año estalla la crisis de la deuda griega en la UE.'},
+
+
+];
+
+// ── SISTEMA FLASHCARD ──
+// ✅ Correcta → carta eliminada del mazo
+// 🔄 Incorrecta → carta vuelve al mazo
+
+let deck = [];
+let wrongCards = [];
+let current = 0;
+let good = 0;
+let bad = 0;
+let totalCards = 0;
+let answered = false;
+let activeFilter = 'all';
+
+function setFilter(cat) {
+  activeFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-cat="${cat}"]`).classList.add('active');
+  restartQuiz();
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function restartQuiz() {
+  const filtered = activeFilter === 'all' ? allQuestions : allQuestions.filter(q => q.cat === activeFilter);
+  deck = shuffle([...filtered]);
+  wrongCards = [];
+  current = 0; good = 0; bad = 0;
+  totalCards = deck.length;
+  updateScore();
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('quizWrap').style.display = 'block';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  if (deck.length === 0 && wrongCards.length > 0) {
+    deck = shuffle([...wrongCards]);
+    wrongCards = [];
+    showRoundInfo();
+    return;
+  }
+  if (deck.length === 0 && wrongCards.length === 0) {
+    showResults();
+    return;
+  }
+  answered = false;
+  const q = deck[0];
+  const remaining = deck.length + wrongCards.length;
+  document.getElementById('questionCounter').textContent =
+    `${totalCards - remaining + 1} / ${totalCards} · ${remaining} fechas restantes`;
+  document.getElementById('questionTheme').textContent = q.theme;
+  document.getElementById('questionText').textContent = q.q;
+  document.getElementById('questionHint').textContent = q.hint || '';
+  const grid = document.getElementById('answersGrid');
+  grid.innerHTML = '';
+  q.answers.forEach((ans, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = ans;
+    btn.onclick = () => answer(i, q.correct, q.explication);
+    grid.appendChild(btn);
+  });
+  document.getElementById('feedback').classList.remove('visible');
+  document.getElementById('nextBtn').classList.remove('visible');
+  updateProgress();
+}
+
+function showRoundInfo() {
+  document.getElementById('questionTheme').textContent = '🔄 Nuevo turno';
+  document.getElementById('questionText').textContent =
+    `¡Quedan ${deck.length} fechas por repasar! Las que has fallado vuelven al mazo.`;
+  document.getElementById('questionHint').textContent = '';
+  document.getElementById('answersGrid').innerHTML = '';
+  document.getElementById('feedback').classList.remove('visible');
+  const btn = document.getElementById('nextBtn');
+  btn.textContent = '¡Continuar! →';
+  btn.classList.add('visible');
+  btn.onclick = () => { btn.onclick = () => nextQuestion(); loadQuestion(); };
+}
+
+function answer(chosen, correct, explication) {
+  if (answered) return;
+  answered = true;
+  const btns = document.querySelectorAll('.answer-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === correct) btn.classList.add('correct');
+    else if (i === chosen && chosen !== correct) btn.classList.add('wrong');
+    else btn.classList.add('reveal');
+  });
+  const isCorrect = chosen === correct;
+  const card = deck.shift();
+  if (isCorrect) { good++; }
+  else { bad++; wrongCards.push(card); }
+  updateScore();
+  document.getElementById('feedbackIcon').textContent = isCorrect ? '✅' : '🔄';
+  document.getElementById('feedbackTitle').textContent = isCorrect
+    ? '¡Correcto! Fecha dominada ✅'
+    : 'No exactamente… Vuelve al mazo 🔄';
+  document.getElementById('feedbackTitle').className = 'feedback-title ' + (isCorrect ? 'correct' : 'wrong');
+  document.getElementById('feedbackText').innerHTML = explication;
+  document.getElementById('feedback').classList.add('visible');
+  const remaining = deck.length + wrongCards.length;
+  document.getElementById('nextBtn').textContent = remaining > 0 ? 'Siguiente fecha →' : 'Ver mis resultados →';
+  document.getElementById('nextBtn').onclick = () => nextQuestion();
+  document.getElementById('nextBtn').classList.add('visible');
+}
+
+function nextQuestion() { loadQuestion(); }
+
+function updateScore() {
+  document.getElementById('scoreGood').textContent = good;
+  document.getElementById('scoreBad').textContent = bad;
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = totalCards > 0 ? (good / totalCards) * 100 : 0;
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${good} / ${totalCards} dominadas`;
+}
+
+function showResults() {
+  document.getElementById('quizWrap').style.display = 'none';
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('resultsScore').textContent = '100%';
+  document.getElementById('resultsLabel').textContent =
+    `¡Has dominado las ${totalCards} fechas! (${bad} intentos fallados en total)`;
+  document.getElementById('bdGood').textContent = totalCards;
+  document.getElementById('bdBad').textContent = bad;
+  document.getElementById('bdTotal').textContent = good + bad;
+  let icon, msg;
+  if (bad === 0) { icon = '🏆'; msg = '¡Perfecto! Has dominado todas las fechas a la primera. ¡Eres un@ campeón@!'; }
+  else if (bad <= 5) { icon = '⭐'; msg = '¡Excelente! Muy pocos errores, dominas casi perfectamente las fechas de Historia.'; }
+  else if (bad <= 15) { icon = '📚'; msg = '¡Bien hecho! Has acabado el mazo. Repasa las fechas que te costaron más.'; }
+  else { icon = '💪'; msg = '¡Lo has conseguido! Sigue repasando para memorizar mejor las fechas.'; }
+  document.getElementById('resultsIcon').textContent = icon;
+  document.getElementById('resultsMsg').textContent = msg;
+}
+
+restartQuiz();
+</script>
+</body>
+</html>
